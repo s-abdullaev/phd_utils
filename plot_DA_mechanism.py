@@ -19,17 +19,20 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 r=0.01
-sigma=0.5
+sigma=0.1
 arrRate=4
 jumpMu=0.05
 jumpSigma=0.2
 
-assetMdl=JumpDiffPricing(r, sigma, arrRate, jumpMu, jumpSigma)
+jdMdl=JumpDiffPricing(r, sigma, arrRate, jumpMu, jumpSigma)
+brMdl=BrownianPricing(r, sigma)
+
+
 opt=CallOption(S0=100,K=100,r=r,sigma=sigma, T=1)
 
 
 ziPricer=ZIPricing(assetMdl)
-
+expPricer=ExpPricing(jdMdl, 0.05)
 
 rndModel=RandomQuantity((-2000,2000))
 linModel=LinearQuantity((-200,1000,500,1000))
@@ -38,16 +41,16 @@ trader=DATrader()
 mechanism=DirectDA()
 
 steps=np.linspace(opt.T, 0, opt.daysToMaturity())
-assetPrices=assetMdl.generate(100, 1, opt.daysToMaturity(), True).T
+#assetPrices=assetMdl.generate(100, 1, opt.daysToMaturity(), True).T
+assetPrices=pd.read_excel('results/JD_asset_prices.xls')
 
 plotDf=pd.DataFrame(np.zeros([opt.daysToMaturity(), 4]), columns=['DAPrice', 'BLSPrice', 'Volume', 'AssetPrice'])
-
-plotDf['AssetPrice']=assetPrices.values
-for i, t, p in zip(range(opt.daysToMaturity()), steps, assetPrices[0].values):
+plotDf['AssetPrice']=assetPrices['AssetPrice']
+for i, t, p in zip(range(opt.daysToMaturity()), steps, assetPrices['AssetPrice'].values):
     opt.T=t
     opt.S0=p    
         
-    orders=trader.getOrders(opt, 100, QuantityModel=rndModel, AssetPricingModel=BrownianPricing(r, sigma))
+    orders=trader.getOrders(opt, 100, QuantityModel=rndModel, OptionPricingModel=expPricer, AssetPricingModel=jdMdl)
     orders=mechanism.clearOrders(orders)
     plotDf.ix[i]['DAPrice']=mechanism.getPrice(orders)
     plotDf.ix[i]['Volume']=mechanism.getVolume(orders)

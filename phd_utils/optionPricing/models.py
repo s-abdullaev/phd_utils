@@ -136,7 +136,7 @@ class ExpPricing(object):
             return np.mean(u(np.exp(opt.r*opt.T)*price-curOptPrices))
         
         for i in range(size):
-            curPrices=self.model.generate(opt.S0, 1000, days)
+            curPrices=self.model.generate(opt.S0, 100, days)
             curOptPrices=curPrices.apply(lambda x: opt.payoff(x))        
             p=optim.fsolve(expectedUtil, opt.blsPrice())
             optPrices.append(p)
