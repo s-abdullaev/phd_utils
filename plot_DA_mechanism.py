@@ -18,8 +18,6 @@ import scipy.optimize as optim
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 
-np.random.seed=400
-
 r=0.01
 sigma=0.5
 arrRate=4
