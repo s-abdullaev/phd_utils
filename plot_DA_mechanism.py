@@ -50,6 +50,7 @@ for i, t, p in zip(range(opt.daysToMaturity()), steps, assetPrices[0].values):
     opt.S0=p    
         
     orders=trader.getOrders(opt, 100, QuantityModel=rndModel, AssetPricingModel=BrownianPricing(r, sigma))
+    orders=trader.getOrders(opt, 100, QuantityModel=rndModel, AssetPricingModel=assetMdl)
     orders=mechanism.clearOrders(orders)
     plotDf.ix[i]['DAPrice']=mechanism.getPrice(orders)
     plotDf.ix[i]['Volume']=mechanism.getVolume(orders)
