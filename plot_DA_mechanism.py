@@ -27,8 +27,8 @@ sigma=0.0089
 arrRate=0.8
 jumpMu=-0.004
 jumpSigma=0.0083
-S0=100
-K=100
+S0=3563.57
+K=3565 
 
 #option to trade
 opt=CallOption(S0=S0,K=K,r=r,sigma=sigma, T=1)
@@ -46,7 +46,6 @@ linModel=LinearQuantity((-1000,1200,1000,200))
 
 #traders
 traders=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl)
-
 
 #underlying market
 assetPrices=brwnMdl.generate(S0, 1, opt.daysToMaturity(), True).T
