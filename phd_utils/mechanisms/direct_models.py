@@ -15,6 +15,7 @@ from phd_utils.optionPricing.qntyModels import *
 from phd_utils.mechanisms.direct_models import *
 from phd_utils.tradingAlgos.DATrader import *
 import scipy.optimize as optim
+from scipy.misc import derivative
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 
@@ -99,7 +100,7 @@ class DirectDASimulator(object):
 
         
         steps=np.linspace(opt.T, 0, opt.daysToMaturity())
-        for i, t, p, r in zip(range(opt.daysToMaturity()), steps, self.assetPrices[0].values, self.interestRates.values):
+        for i, t, p, r in zip(range(opt.daysToMaturity()), steps, self.assetPrices.values, self.interestRates.values):
             opt.T=t
             opt.S0=p    
             opt.r=r
@@ -120,7 +121,31 @@ class DirectDASimulator(object):
             plotDf.to_excel('results/%s.xls' % self.name)
 
         return plotDf
+    
+    def simulateDelta(self, assetPrices, save=True):
+        opt=copy.copy(self.option)
+        mechanism=self.mechanism
         
+        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 2]), columns=['AssetPrice', 'Delta'])
+        plotDf['AssetPrice']=assetPrices.values
+        
+        def optPrice(assetPrice):
+            opt.S0=assetPrice
+            
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            return mechanism.getPrice(orders)
+        
+        for i, p in enumerate(assetPrices.values):
+            plotDf.ix[i]['Delta']=derivative(optPrice, x0=p,dx=10)
+            
+            print i
+        
+        if save:
+            plotDf.to_excel('results/%s_forAssets.xls' % self.name)
+
+        return plotDf
 #r=0.01
 #sigma=0.5
 #arrRate=4

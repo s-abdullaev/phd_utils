@@ -38,22 +38,25 @@ brwnMdl=BrownianPricing(r, sigma)
 jumpDiffMdl=JumpDiffPricing(r, sigma, arrRate, jumpMu, jumpSigma)
 
 #option pricing methods
-ziPricer=ZIPricing(assetMdl)
+ziOptPricer=ZIPricing(brwnMdl)
+expOptPricer=ExpPricing(brwnMdl, 0.1)
 
 #quantity models
 rndModel=RandomQuantity((-2000,2000))
 linModel=LinearQuantity((-1000,1200,1000,200))
 
 #traders
-traders=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl)
+traders=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
 
 #underlying market
-assetPrices=brwnMdl.generate(S0, 1, opt.daysToMaturity(), True).T
+assetPrices=brwnMdl.generate(S0, 1, opt.daysToMaturity(), True).T[0]
+linAssetPrices=pd.Series(np.linspace(3465,3665,100), name='AssetPrices')
 interestRates=pd.Series(np.ones(opt.daysToMaturity())*r, name='InterestRate')
 
 #mechanisms
 daSim=DirectDASimulator("fixed_brownian_mon_rnd", assetPrices, interestRates, traders, opt, numTraders)
+
 plotDf=daSim.simulate()
-
-
-plotDf.plot(y=['DAPrice','BLSPrice'])
+plotDf.plot(y=['BLSPrice', 'DAPrice'])
+#plotDf=daSim.simulateDelta(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y='Delta')

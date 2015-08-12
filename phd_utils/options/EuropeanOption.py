@@ -69,6 +69,10 @@ class OptionContract(object):
     
     def gamma(self):
         return stats.norm.cdf(self.d1())/(self.sigma*self.S0*np.sqrt(self.T))
+    
+    def theta(self):
+        NPrime=((2*np.pi)**(-1/2))*np.exp(-0.5*(self.d1())**2)
+        return (NPrime)*(-self.S0*self.sigma*0.5/np.sqrt(self.T))-self.r*self.K * np.exp(-self.r * self.T) * stats.norm.cdf(self.d2())
 
 
 class CallOption(OptionContract):
