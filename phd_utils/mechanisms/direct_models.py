@@ -32,7 +32,7 @@ class DirectDA(object):
         b=np.zeros([2,1])
         res=optim.linprog(c, A_eq=A, b_eq=b, bounds=bounds, options={'disp':True})
         
-        orders['accepted']=res.x
+        orders['accepted']=np.round(res.x, 4)
         
         return orders
     
@@ -63,8 +63,64 @@ class DirectDA(object):
         volAsks=abs(clrAsks['quantity'].sum())
         
         return min([volBids, volAsks])
+        
+    def getErrEfficiency(self, orders, volume):
+        rejOrder=orders[(orders.accepted>0) & (orders.accepted<1)]
+        if not rejOrder.empty:
+            effErr=abs(rejOrder.accepted.values[0] * rejOrder.quantity.values[0])
+            return effErr/(volume+effErr)
+        else:
+            return 0
+    
+    def getBudgetBalance(self, orders, price):
+        rejOrder=orders[(orders.accepted>0) & (orders.accepted<1)]
+        if not rejOrder.empty:
+            return rejOrder.accepted.values[0] * rejOrder.quantity.values[0] * price
+        else:
+            return 0
 
-#
+class DirectDASimulator(object):
+    def __init__(self, name, assetPrices, interestRates, traders, option, numOrders):
+        self.name=name
+        self.assetPrices=assetPrices
+        self.interestRates=interestRates
+        self.traders=traders
+        self.option=option
+        self.numOrders=numOrders
+        self.mechanism=DirectDA()
+        
+    def simulate(self, save=True):
+        opt=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([opt.daysToMaturity(), 7]), columns=['DAPrice', 'BLSPrice', 'Volume', 'AssetPrice', 'InterestRate', 'EffErr', 'BB'])
+        plotDf['AssetPrice']=self.assetPrices.values
+        plotDf['InterestRate']=self.interestRates.values
+
+        
+        steps=np.linspace(opt.T, 0, opt.daysToMaturity())
+        for i, t, p, r in zip(range(opt.daysToMaturity()), steps, self.assetPrices[0].values, self.interestRates.values):
+            opt.T=t
+            opt.S0=p    
+            opt.r=r
+            
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            plotDf.ix[i]['DAPrice']=mechanism.getPrice(orders)
+            plotDf.ix[i]['BLSPrice']=opt.blsPrice()    
+            plotDf.ix[i]['InterestRate']=opt.r
+            plotDf.ix[i]['Volume']=mechanism.getVolume(orders)
+            plotDf.ix[i]['EffErr']=mechanism.getErrEfficiency(orders, plotDf.ix[i]['Volume'])
+            plotDf.ix[i]['BB']=mechanism.getBudgetBalance(orders, plotDf.ix[i]['DAPrice'])
+            
+            print i
+        
+        if save:
+            plotDf.to_excel('results/%s.xls' % self.name)
+
+        return plotDf
+        
 #r=0.01
 #sigma=0.5
 #arrRate=4

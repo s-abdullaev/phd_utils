@@ -29,12 +29,12 @@ class LinearQuantity(object):
     
     def getQuantities(self, optionPrices):
         def demFunc(x):
-            return np.min(self.linParams[0]*x+self.linParams[1], 0)
+            return np.round(np.min(self.linParams[0]*abs(x)+self.linParams[1], 0))
         
         def supFunc(x):
-            return self.linParams[2]*x+self.linParams[3]
+            return -np.round(abs(self.linParams[2]*abs(x)+self.linParams[3]))
         
-        optionPrices['quantities']=optionPrices['prices'].apply(lambda x: np.round(demFunc(x) if x>0 else supFunc(x)))
+        optionPrices['quantities']=optionPrices['prices'].apply(lambda x: demFunc(x) if np.random.rand()>0.5 else supFunc(x))
         return optionPrices
 
 class OptionPortfolioQuantity(object):

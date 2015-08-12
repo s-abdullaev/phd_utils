@@ -18,13 +18,14 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 class DATrader(object):
+    def __init__(self, **kwargs):
+        self.assetPricingModel=kwargs['AssetPricingModel'] if 'AssetPricingModel' in kwargs else BrownianPricing(0.01, 0.05)
+        self.optPricingModel=kwargs['OptionPricingModel'] if 'OptionPricingModel' in kwargs else MonteCarloPricing(self.assetPricingModel, 100)
+        self.quantityModel=kwargs['QuantityModel'] if 'QuantityModel' in kwargs else RandomQuantity((-20,20))
+    
     def getOrders(self, optionType, size, **kwargs):
-        assetPricingModel=kwargs['AssetPricingModel'] if 'AssetPricingModel' in kwargs else BrownianPricing(0.01, 0.05)
-        optPricingModel=kwargs['OptionPricingModel'] if 'OptionPricingModel' in kwargs else MonteCarloPricing(assetPricingModel, 100)
-        quantityModel=kwargs['QuantityModel'] if 'QuantityModel' in kwargs else RandomQuantity((-20,20))
-        
-        orders=pd.DataFrame(optPricingModel.getPrices(optionType, size))        
-        orders=quantityModel.getQuantities(orders)
+        orders=pd.DataFrame(self.optPricingModel.getPrices(optionType, size))        
+        orders=self.quantityModel.getQuantities(orders)
         orders.columns=['price', 'quantity']
         
         return orders
@@ -33,3 +34,16 @@ class DATrader(object):
 #trader=DATrader()
 #orders=trader.getOrders(opt, 100)
 #print orders.head()
+
+class DATraderCollection(object):
+    def __init__(self, traderCol, proportions):
+        self.traders=traderCol
+        self.props=proportions
+    
+    def getOrders(self, optionType, size):
+        orders=pd.DataFrame(data=None, columns=['price', 'quantity'])
+        for trader, perc in zip(self.traders, self.props):
+            orders=orders.append(trader.getOrders(optionType, int(size*perc)))
+        orders=orders.reset_index()
+        
+        return orders

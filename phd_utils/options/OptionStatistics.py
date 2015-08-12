@@ -9,7 +9,6 @@ import pandas as pd
 from pandas import DataFrame
 
 class OptionStatistics(object):
-    df=None
     
     def __init__(self, optionDf):
         self.df=optionDf
