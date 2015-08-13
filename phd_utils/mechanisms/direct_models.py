@@ -90,7 +90,7 @@ class DirectDASimulator(object):
         self.numOrders=numOrders
         self.mechanism=DirectDA()
         
-    def simulate(self, save=True):
+    def simulate(self):
         opt=copy.copy(self.option)
         mechanism=self.mechanism
         
@@ -116,36 +116,303 @@ class DirectDASimulator(object):
             plotDf.ix[i]['BB']=mechanism.getBudgetBalance(orders, plotDf.ix[i]['DAPrice'])
             
             print i
-        
-        if save:
-            plotDf.to_excel('results/%s.xls' % self.name)
-
         return plotDf
     
-    def simulateDelta(self, assetPrices, save=True):
+    def simulateBSDelta(self, assetPrices):
+        opt=copy.copy(self.option)
+        opt2=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Delta', 'BLS_Delta'])
+        plotDf['AssetPrice']=assetPrices.values
+        
+        for i, p in enumerate(assetPrices.values):
+            opt.S0=p
+            opt2.S0=p
+        
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            curOptPrice=mechanism.getPrice(orders)
+            opt2.sigma=opt.getImpVol(curOptPrice)
+            
+            plotDf.ix[i]['DA_Delta']=opt2.delta()
+            plotDf.ix[i]['BLS_Delta']=opt.delta()
+            
+            print i
+     
+        return plotDf
+    
+    def simulateBSDeltaWithTime(self, timeSteps):
+        opt=copy.copy(self.option)
+        opt2=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Delta', 'BLS_Delta'])
+        plotDf['TimeToMaturity']=timeSteps
+        
+        for i, p in enumerate(timeSteps):
+            opt.T=p
+            opt2.T=p
+        
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            curOptPrice=mechanism.getPrice(orders)
+            opt2.sigma=opt.getImpVol(curOptPrice)
+            
+            plotDf.ix[i]['DA_Delta']=opt2.delta()
+            plotDf.ix[i]['BLS_Delta']=opt.delta()
+            
+            print i
+     
+        return plotDf
+    
+    def simulateBSGamma(self, assetPrices):
+        opt=copy.copy(self.option)
+        opt2=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Gamma', 'BLS_Gamma'])
+        plotDf['AssetPrice']=assetPrices.values
+        
+        for i, p in enumerate(assetPrices.values):
+            opt.S0=p
+            opt2.S0=p
+        
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            curOptPrice=mechanism.getPrice(orders)
+            opt2.sigma=opt.getImpVol(curOptPrice)
+            
+            plotDf.ix[i]['DA_Gamma']=opt2.gamma()
+            plotDf.ix[i]['BLS_Gamma']=opt.gamma()
+            
+            print i
+     
+        return plotDf
+    
+    def simulateBSGammaWithTime(self, timeSteps):
+        opt=copy.copy(self.option)
+        opt2=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Gamma', 'BLS_Gamma'])
+        plotDf['TimeToMaturity']=timeSteps
+        
+        for i, p in enumerate(timeSteps):
+            opt.T=p
+            opt2.T=p
+        
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            curOptPrice=mechanism.getPrice(orders)
+            opt2.sigma=opt.getImpVol(curOptPrice)
+            
+            plotDf.ix[i]['DA_Gamma']=opt2.gamma()
+            plotDf.ix[i]['BLS_Gamma']=opt.gamma()
+            
+            print i     
+        return plotDf
+    
+    def simulateBSTheta(self, assetPrices):
+        opt=copy.copy(self.option)
+        opt2=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Theta', 'BLS_Theta'])
+        plotDf['AssetPrice']=assetPrices.values
+        
+        for i, p in enumerate(assetPrices.values):
+            opt.S0=p
+            opt2.S0=p
+            
+            optPrices=[]
+            for t in range(5):
+                orders=self.traders.getOrders(opt, self.numOrders)
+                orders=mechanism.clearOrders(orders)
+                optPrices.append(mechanism.getPrice(orders))
+            
+            curOptPrice=np.mean(optPrices)
+            opt2.sigma=opt.getImpVol(curOptPrice)
+            
+            plotDf.ix[i]['DA_Theta']=opt2.theta()
+            plotDf.ix[i]['BLS_Theta']=opt.theta()
+            
+            print i
+     
+        return plotDf
+    
+    def simulateBSThetaWithTime(self, timeSteps):
+        opt=copy.copy(self.option)
+        opt2=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Theta', 'BLS_Theta'])
+        plotDf['TimeToMaturity']=timeSteps
+        
+        for i, p in enumerate(timeSteps):
+            opt.T=p
+            opt2.T=p
+        
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            curOptPrice=mechanism.getPrice(orders)
+            opt2.sigma=opt.getImpVol(curOptPrice)
+            
+            plotDf.ix[i]['DA_Theta']=opt2.theta()
+            plotDf.ix[i]['BLS_Theta']=opt.theta()
+            
+            print i     
+        return plotDf
+    
+    def simulateVolCurve(self, strikes):
         opt=copy.copy(self.option)
         mechanism=self.mechanism
         
-        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 2]), columns=['AssetPrice', 'Delta'])
+        plotDf=pd.DataFrame(np.zeros([len(strikes), 2]), columns=['Strikes', 'ImpVol'])
+        plotDf['Strikes']=strikes
+        
+        for i, p in enumerate(strikes):
+            opt.K=p
+            
+            optPrices=[]
+            for t in range(2):
+                orders=self.traders.getOrders(opt, self.numOrders)
+                orders=mechanism.clearOrders(orders)
+                optPrices.append(mechanism.getPrice(orders))
+            
+            curOptPrice=np.mean(optPrices)
+            plotDf.ix[i]['ImpVol']=opt.getImpVol(curOptPrice)
+            
+            print i     
+        return plotDf
+    
+    def simulateDelta(self, assetPrices):
+        opt=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Delta', 'BLS_Delta'])
         plotDf['AssetPrice']=assetPrices.values
         
         def optPrice(assetPrice):
             opt.S0=assetPrice
+            prices=[]
             
-            orders=self.traders.getOrders(opt, self.numOrders)
-            orders=mechanism.clearOrders(orders)
+            for i in range(5):
+                orders=self.traders.getOrders(opt, self.numOrders)
+                orders=mechanism.clearOrders(orders)
+                prices.append(mechanism.getPrice(orders))
             
-            return mechanism.getPrice(orders)
+            return np.mean(prices)
         
         for i, p in enumerate(assetPrices.values):
-            plotDf.ix[i]['Delta']=derivative(optPrice, x0=p,dx=10)
+            plotDf.ix[i]['DA_Delta']=derivative(optPrice, x0=p,dx=20)
+            
+            opt.S0=p            
+            plotDf.ix[i]['BLS_Delta']=opt.delta()
             
             print i
-        
-        if save:
-            plotDf.to_excel('results/%s_forAssets.xls' % self.name)
-
+     
         return plotDf
+    
+    def simulateDeltaWithTime(self, timeSteps):
+        opt=copy.copy(self.option)
+        spotPrice=copy.copy(opt.S0)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Delta', 'BLS_Delta'])
+        plotDf['TimeToMaturity']=timeSteps
+        
+        def optPrice(assetPrice):
+            opt.S0=assetPrice
+            prices=[]
+            
+            for i in range(5):
+                orders=self.traders.getOrders(opt, self.numOrders)
+                orders=mechanism.clearOrders(orders)
+                prices.append(mechanism.getPrice(orders))
+            
+            return np.mean(prices)
+        
+        for i, p in enumerate(timeSteps):
+            opt.T=p            
+            plotDf.ix[i]['DA_Delta']=derivative(optPrice, x0=spotPrice, dx=20)
+            
+            opt.S0=spotPrice
+            plotDf.ix[i]['BLS_Delta']=opt.delta()
+            
+            print i
+     
+        return plotDf
+    
+    
+    def simulateGamma(self, assetPrices):
+        opt=copy.copy(self.option)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Gamma', 'BLS_Gamma'])
+        plotDf['AssetPrice']=assetPrices.values
+        
+        def optPrice(assetPrice):
+            opt.S0=assetPrice
+            prices=[]
+
+            for i in range(10):
+                orders=self.traders.getOrders(opt, self.numOrders)
+                orders=mechanism.clearOrders(orders)
+                prices.append(mechanism.getPrice(orders))
+                
+            return np.mean(prices)
+        
+        for i, p in enumerate(assetPrices.values):
+            plotDf.ix[i]['DA_Gamma']=derivative(optPrice, x0=p,dx=20, n=2)
+            
+            opt.S0=p            
+            plotDf.ix[i]['BLS_Gamma']=opt.gamma()
+            
+            print plotDf.ix[i]['DA_Gamma'], plotDf.ix[i]['BLS_Gamma']
+            
+            print i
+     
+        return plotDf
+    
+    def simulateGammaWithTime(self, timeSteps):
+        opt=copy.copy(self.option)
+        spotPrice=copy.copy(opt.S0)
+        mechanism=self.mechanism
+        
+        plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Gamma', 'BLS_Gamma'])
+        plotDf['TimeToMaturity']=timeSteps
+        
+        def optPrice(assetPrice):
+            opt.S0=assetPrice
+            prices=[]
+            
+            for i in range(10):
+                orders=self.traders.getOrders(opt, self.numOrders)
+                orders=mechanism.clearOrders(orders)
+                prices.append(mechanism.getPrice(orders))
+                
+            return np.mean(prices)
+        
+        for i, p in enumerate(timeSteps):
+            opt.T=p            
+            plotDf.ix[i]['DA_Gamma']=derivative(optPrice, x0=spotPrice, dx=10, n=2)
+            
+            opt.S0=spotPrice
+            plotDf.ix[i]['BLS_Gamma']=opt.gamma()
+            
+            print i
+     
+        return plotDf
+
+class Experiment(object):
+    def __init__(self, folder):
+        pass
 #r=0.01
 #sigma=0.5
 #arrRate=4

@@ -28,10 +28,13 @@ arrRate=0.8
 jumpMu=-0.004
 jumpSigma=0.0083
 S0=3563.57
-K=3565 
+K=3563.57
 
 #option to trade
 opt=CallOption(S0=S0,K=K,r=r,sigma=sigma, T=1)
+
+matTime=np.linspace(opt.T, 0, 20)
+linAssetPrices=pd.Series(np.linspace(3465,3665,20), name='AssetPrices')
 
 #asset pricing methods
 brwnMdl=BrownianPricing(r, sigma)
@@ -46,17 +49,46 @@ rndModel=RandomQuantity((-2000,2000))
 linModel=LinearQuantity((-1000,1200,1000,200))
 
 #traders
-traders=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
+expTrader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
+monBrwnTrader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl)
+monJumpDiffTrader=DATrader(QuantityModel=rndModel, AssetPricingModel=jumpDiffMdl)
+
+#trader collection
+mixedTraders=DATraderCollection([expTrader, monBrwnTrader, monJumpDiffTrader], [0.3,0.3,0.4])
 
 #underlying market
 assetPrices=brwnMdl.generate(S0, 1, opt.daysToMaturity(), True).T[0]
-linAssetPrices=pd.Series(np.linspace(3465,3665,100), name='AssetPrices')
 interestRates=pd.Series(np.ones(opt.daysToMaturity())*r, name='InterestRate')
 
 #mechanisms
-daSim=DirectDASimulator("fixed_brownian_mon_rnd", assetPrices, interestRates, traders, opt, numTraders)
+daSim=DirectDASimulator("fixed_brownian_mon_rnd", assetPrices, interestRates, monJumpDiffTrader, opt, numTraders)
+#daMixedSim=DirectDASimulator("fixed_mixed1",  assetPrices, interestRates, mixedTraders, opt, numTraders)
 
-plotDf=daSim.simulate()
-plotDf.plot(y=['BLSPrice', 'DAPrice'])
-#plotDf=daSim.simulateDelta(linAssetPrices)
-#plotDf.plot(x='AssetPrice', y='Delta')
+
+#plotDf=daMixedSim.simulate()
+#plotDf.plot(y=['BLSPrice', 'DAPrice'])
+
+#plotDf=daSim.simulateDeltaWithTime(matTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Delta', 'BLS_Delta'])
+
+#plotDf=daSim.simulateBSGamma(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y=['DA_Gamma', 'BLS_Gamma'])
+
+#plotDf=daSim.simulateGammaWithTime(matTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Gamma', 'BLS_Gamma'])
+
+#plotDf=daSim.simulateBSDelta(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y=['DA_Delta', 'BLS_Delta'])
+
+#plotDf=daSim.simulateBSDeltaWithTime(matTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Delta', 'BLS_Delta'])
+
+#plotDf=daSim.simulateBSTheta(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y=['DA_Theta', 'BLS_Theta'])
+
+#plotDf=daSim.simulateBSThetaWithTime(matTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Theta', 'BLS_Theta'])
+
+plotDf=daSim.simulateVolCurve(linAssetPrices)
+plotDf.plot(x='Strikes', y='ImpVol')
+

@@ -3,6 +3,8 @@ from math import *
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
+import scipy.optimize as optim
+import copy
 
 
 OPTION_PORTFOLIOS=pd.DataFrame({'Short Call':	[-1, 0, 0, 0, 0, 0],
@@ -31,7 +33,6 @@ OPTION_PORTFOLIOS=pd.DataFrame({'Short Call':	[-1, 0, 0, 0, 0, 0],
 OPTION_PORTFOLIOS.columns=['ATM_call', 'ATM_put', 'OTM_call', 'OTM_put', 'ITM_call', 'ITM_put']
 
 class OptionContract(object):
-    
     def __init__(self, **kwargs):
         self.K=100
         self.isLong=True
@@ -66,9 +67,17 @@ class OptionContract(object):
     
     def delta(self):
         return stats.norm.cdf(self.d1())
-    
+        
+    def getImpVol(self, price):
+        opt2=copy.copy(self)
+        def getOptPrice(sigma):
+            opt2.sigma=sigma
+            return price-opt2.blsPrice()
+        return optim.fsolve(getOptPrice, x0=opt2.sigma)[0]
+        
     def gamma(self):
-        return stats.norm.cdf(self.d1())/(self.sigma*self.S0*np.sqrt(self.T))
+        NPrime=((2*np.pi)**(-1/2))*np.exp(-0.5*(self.d1())**2)
+        return (NPrime/(self.S0*self.sigma*self.T**(1/2)))
     
     def theta(self):
         NPrime=((2*np.pi)**(-1/2))*np.exp(-0.5*(self.d1())**2)
@@ -113,3 +122,6 @@ class OptionPortfolio(OptionContract):
     
     def gamma(self):
         return np.sum(opt.gamma() for opt in self.portfolio)
+        
+    def theta(self):
+        return np.sum(opt.theta() for opt in self.portfolio)
