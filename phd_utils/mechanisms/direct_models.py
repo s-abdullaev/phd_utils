@@ -410,9 +410,6 @@ class DirectDASimulator(object):
      
         return plotDf
 
-class Experiment(object):
-    def __init__(self, folder):
-        pass
 #r=0.01
 #sigma=0.5
 #arrRate=4

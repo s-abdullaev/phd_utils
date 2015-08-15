@@ -99,17 +99,48 @@ class PutOption(OptionContract):
     def delta(self):
         return -stats.norm.cdf(-self.d1())
 
-class OptionPortfolio(OptionContract):
-    def __init__(self, **kwargs):
-        self.K=100
-        self.isLong=True
-        self.S0=100.0
-        self.r=0.05
-        self.T=1
-        self.sigma=0.02
-        self.name=''
-        self.portfolio=[]
-        self.__dict__.update(kwargs)
+class OptionPortfolio(object):
+    def __init__(self, atm_call, atm_put, eps, port_qnties):
+        self.portfolio=[]        
+        if port_qnties['ATM_call']:
+            opt=copy.copy(atm_call)
+            opt.isLong = True if port_qnties['ATM_call']>0 else False
+            for o in [opt]*abs(port_qnties['ATM_call']):
+                self.portfolio.append(o)
+                
+        if port_qnties['ATM_put']:
+            opt=copy.copy(atm_put)
+            opt.isLong = True if port_qnties['ATM_put']>0 else False
+            for o in [opt]*abs(port_qnties['ATM_put']):
+                self.portfolio.append(o)
+        
+        if port_qnties['ITM_call']:
+            opt=copy.copy(atm_call)
+            opt.K-=eps
+            opt.isLong = True if port_qnties['ITM_call']>0 else False
+            for o in [opt]*abs(port_qnties['ITM_call']):
+                self.portfolio.append(o)
+                
+        if port_qnties['ITM_put']:
+            opt=copy.copy(atm_put)
+            opt.K+=eps
+            opt.isLong = True if port_qnties['ITM_put']>0 else False
+            for o in [opt]*abs(port_qnties['ITM_put']):
+                self.portfolio.append(o)
+        
+        if port_qnties['OTM_call']:
+            opt=copy.copy(atm_call)
+            opt.K-=eps
+            opt.isLong = True if port_qnties['OTM_call']>0 else False
+            for o in [opt]*abs(port_qnties['OTM_call']):
+                self.portfolio.append(o)
+                
+        if port_qnties['OTM_put']:
+            opt=copy.copy(atm_put)
+            opt.K+=eps
+            opt.isLong = True if port_qnties['OTM_put']>0 else False
+            for o in [opt]*abs(port_qnties['OTM_put']):
+                self.portfolio.append(o)
     
     def payoff(self, St):
         return np.sum(opt.payoff(St) for opt in self.portfolio)
