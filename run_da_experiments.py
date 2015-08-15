@@ -30,7 +30,7 @@ jumpMu=-0.004
 jumpSigma=0.0083
 S0=3563.57
 K=3563.57
-eps=20
+eps=50
 T=1
 
 r_mu=0.46
@@ -47,8 +47,8 @@ ntrials=100
 
 
 qnty_random=(-2000,2000)
+qnty_const=(0,1200,0,1200)
 qnty_lin=(-1000,1200,1000,200)
-
 #option to trade
 call_atm=CallOption(S0=S0,K=K,r=r,sigma=sigma, T=T)
 put_atm=PutOption(S0=S0,K=K,r=r,sigma=sigma, T=T)
@@ -79,6 +79,7 @@ port_bearish2=OptionPortfolio(call_atm, put_atm, eps, OPTION_PORTFOLIOS.ix['Bear
 #lin assets and maturity                         
 linTime=np.linspace(T, 0, 50)
 linAssetPrices=pd.Series(np.linspace(3465,3665,50), name='AssetPrices')
+
 
 #asset pricing models
 brwnMdl=BrownianPricing(r, sigma)
@@ -115,6 +116,7 @@ lmsr_bearPricer2=LMSRPricing(brwnMdl, ntrials, lmsr_liquidity, port_bearish2)
 #quantity models
 rndModel=RandomQuantity(qnty_random)
 linModel=LinearQuantity(qnty_lin)
+constModel=LinearQuantity(qnty_const)
 
 #traders
 exp_rnd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
@@ -145,6 +147,12 @@ mon_lin_brwn_trader=DATrader(QuantityModel=linModel, AssetPricingModel=brwnMdl, 
 mon_lin_jd_trader=DATrader(QuantityModel=linModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monOptPricer)
 bs_lin_trader=DATrader(QuantityModel=linModel, OptionPricingModel=bsOptPricer)
 
+exp_const_trader=DATrader(QuantityModel=constModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
+mon_const_brwn_trader=DATrader(QuantityModel=constModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer)
+mon_const_jd_trader=DATrader(QuantityModel=constModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monOptPricer)
+bs_const_trader=DATrader(QuantityModel=constModel, OptionPricingModel=bsOptPricer)
+
+
 #trader collection
 mixedRiskNeutralTraders1=DATraderCollection([mon_rnd_brwn_trader, mon_rnd_jd_trader, bs_rnd_trader], [0.3,0.3,0.4])
 mixedRiskNeutralTraders2=DATraderCollection([mon_rnd_brwn_trader, mon_rnd_jd_trader, bs_rnd_trader], [0.2,0.6,0.2])
@@ -164,21 +172,9 @@ mixedLmsrTraders4=DATraderCollection([lmsr_rnd_neutralTrader4, lmsr_rnd_bullTrad
 assetPrices=pd.read_excel('data/brwn_assetPrices.xls')[0]
 interestRates=pd.Series(np.ones(call_atm.daysToMaturity())*r, name='InterestRate')
 
-DAExperiment("results/da_experiments/mon_rnd_brwn", assetPrices, interestRates, mon_rnd_brwn_trader,[call_atm, call_otm, call_itm], numTraders, linAssetPrices,  linTime).start()
+#DAExperiment("results/da_experiments/mon_rnd_brwn", assetPrices, interestRates, mon_rnd_brwn_trader,[call_atm, call_otm, call_itm], numTraders, linAssetPrices,  linTime).start()
 
 #assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #mechanisms
@@ -206,7 +202,7 @@ DAExperiment("results/da_experiments/mon_rnd_brwn", assetPrices, interestRates, 
 
 #plotDf=daSim.simulateBSThetaWithTime(matTime)
 #plotDf.plot(x='TimeToMaturity', y=['DA_Theta', 'BLS_Theta'])
-
-#plotDf=daSim.simulateVolCurve(linAssetPrices)
-#plotDf.plot(x='Strikes', y='ImpVol')
+da=DirectDASimulator('test', assetPrices, interestRates, mixedLmsrTraders4, call_atm, numTraders)
+plotDf=da.simulateVolCurve(linAssetPrices)
+plotDf.plot(x='Strikes', y='ImpVol')
 

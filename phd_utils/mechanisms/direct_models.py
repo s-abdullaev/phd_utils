@@ -46,11 +46,15 @@ class DirectDA(object):
         #offbids.ix[offbids.idxmax()['b']]['b']
         if len(offbids)>0:
             max_off_bid=offbids.ix[offbids.price.argmax()]['price']
+            if max_off_bid<=0:
+                max_off_bid=orders[(orders.accepted > 0) & (orders.quantity > 0)]['price'].min()
         else:
             max_off_bid=orders[(orders.accepted > 0) & (orders.quantity > 0)]['price'].min()
             
         if len(offasks)>0:
             min_off_ask=offasks.ix[offasks.price.argmin()]['price']
+            if min_off_ask<=0:
+                min_off_ask=orders[(orders.accepted > 0) & (orders.quantity < 0)]['price'].max()
         else:
             min_off_ask=orders[(orders.accepted > 0) & (orders.quantity < 0)]['price'].max()
         
@@ -278,7 +282,7 @@ class DirectDASimulator(object):
         
         for i, p in enumerate(strikes):
             opt.K=p
-            
+            opt2=copy.copy(opt)
             optPrices=[]
             for t in range(2):
                 orders=self.traders.getOrders(opt, self.numOrders)
@@ -286,8 +290,8 @@ class DirectDASimulator(object):
                 optPrices.append(mechanism.getPrice(orders))
             
             curOptPrice=np.mean(optPrices)
-            plotDf.ix[i]['ImpVol']=opt.getImpVol(curOptPrice)
-            
+            plotDf.ix[i]['ImpVol']=opt2.getImpVol(curOptPrice)
+
             print i     
         return plotDf
     
@@ -300,14 +304,10 @@ class DirectDASimulator(object):
         
         def optPrice(assetPrice):
             opt.S0=assetPrice
-            prices=[]
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
             
-            for i in range(5):
-                orders=self.traders.getOrders(opt, self.numOrders)
-                orders=mechanism.clearOrders(orders)
-                prices.append(mechanism.getPrice(orders))
-            
-            return np.mean(prices)
+            return np.mean(mechanism.getPrice(orders))
         
         for i, p in enumerate(assetPrices.values):
             plotDf.ix[i]['DA_Delta']=derivative(optPrice, x0=p,dx=20)
@@ -329,14 +329,11 @@ class DirectDASimulator(object):
         
         def optPrice(assetPrice):
             opt.S0=assetPrice
-            prices=[]
-            
-            for i in range(5):
-                orders=self.traders.getOrders(opt, self.numOrders)
-                orders=mechanism.clearOrders(orders)
-                prices.append(mechanism.getPrice(orders))
-            
-            return np.mean(prices)
+
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+       
+            return mechanism.getPrice(orders)
         
         for i, p in enumerate(timeSteps):
             opt.T=p            
@@ -359,14 +356,10 @@ class DirectDASimulator(object):
         
         def optPrice(assetPrice):
             opt.S0=assetPrice
-            prices=[]
-
-            for i in range(10):
-                orders=self.traders.getOrders(opt, self.numOrders)
-                orders=mechanism.clearOrders(orders)
-                prices.append(mechanism.getPrice(orders))
-                
-            return np.mean(prices)
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            return mechanism.getPrice(orders)
         
         for i, p in enumerate(assetPrices.values):
             plotDf.ix[i]['DA_Gamma']=derivative(optPrice, x0=p,dx=20, n=2)
@@ -390,14 +383,11 @@ class DirectDASimulator(object):
         
         def optPrice(assetPrice):
             opt.S0=assetPrice
-            prices=[]
-            
-            for i in range(10):
-                orders=self.traders.getOrders(opt, self.numOrders)
-                orders=mechanism.clearOrders(orders)
-                prices.append(mechanism.getPrice(orders))
-                
-            return np.mean(prices)
+
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+
+            return mechanism.getPrice(orders)
         
         for i, p in enumerate(timeSteps):
             opt.T=p            
