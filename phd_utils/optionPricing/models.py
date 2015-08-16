@@ -34,22 +34,23 @@ class ZIPricing(object):
 #optPrices.hist()
 
 class BSPricing(object):
-    def __init__(self, ret, sigma):
+    def __init__(self, ret, sigma, sigma_eps):
         self.ret=ret
         self.sigma=sigma
+        self.sigma_eps=sigma_eps
     
     def getPrices(self, opt, size):
         if opt.T==0: 
             return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
 
         basePrices=[]
-        for r,sig in zip(self.ret, self.sigma):
+        for i in range(size):
             self.option=copy.deepcopy(opt)
-            self.option.S0=S0
-            self.option.r=r
-            self.option.sigma=sig
+            self.option.S0=opt.S0
+            self.option.r=self.ret
+            self.option.sigma=self.sigma+np.random.randn()*self.sigma_eps
             basePrices.append(self.option.blsPrice())
-        return pd.Series(np.random.choice(basePrices,replace=True, size=size), name='prices')
+        return pd.Series(basePrices, name='prices')
 
 class MonteCarloPricing(object):
     def __init__(self, assetPricingModel, ntrials):

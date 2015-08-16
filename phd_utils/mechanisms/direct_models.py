@@ -69,6 +69,55 @@ class DirectDA(object):
         
         return min([volBids, volAsks])
         
+    def getPriceStats(self, orders):
+        price_stats={}
+        accepted_bids=orders[(orders.accepted == 1) & (orders.quantity > 0)].price
+        accepted_asks=orders[(orders.accepted == 1) & (orders.quantity < 0)].price
+        
+        rejected_bids=orders[(orders.accepted < 1) & (orders.quantity > 0)].price
+        rejected_asks=orders[(orders.accepted < 1) & (orders.quantity < 0)].price
+        
+        price_stats['accepted_bid_max']=accepted_bids.max()
+        price_stats['accepted_bid_min']=accepted_bids.min()
+        price_stats['accepted_bid_avg']=np.mean(accepted_bids)
+        price_stats['accepted_bid_std']=np.std(accepted_bids)
+        
+        price_stats['accepted_ask_max']=accepted_asks.max()
+        price_stats['accepted_ask_min']=accepted_asks.min()
+        price_stats['accepted_ask_avg']=np.mean(accepted_asks)
+        price_stats['accepted_ask_std']=np.std(accepted_asks)
+        
+        price_stats['rejected_bid_max']=rejected_bids.max()
+        price_stats['rejected_bid_min']=rejected_bids.min()
+        price_stats['rejected_bid_avg']=np.mean(rejected_bids)
+        price_stats['rejected_bid_std']=np.std(rejected_bids)
+        
+        price_stats['rejected_ask_max']=rejected_asks.max()
+        price_stats['rejected_ask_min']=rejected_asks.min()
+        price_stats['rejected_ask_avg']=np.mean(rejected_asks)
+        price_stats['rejected_ask_std']=np.std(rejected_asks)
+        
+        return price_stats
+        
+    def getPriceStatCols(self):
+        price_stats_cols=['accepted_bid_max',
+                          'accepted_bid_min', 
+                          'accepted_bid_avg', 
+                          'accepted_bid_std',
+                          'accepted_ask_max',
+                          'accepted_ask_min',
+                          'accepted_ask_avg',
+                          'accepted_ask_std',
+                          'rejected_bid_max',
+                          'rejected_bid_min',
+                          'rejected_bid_avg',
+                          'rejected_bid_std',
+                          'rejected_ask_max',
+                          'rejected_ask_min',
+                          'rejected_ask_avg',
+                          'rejected_ask_std']
+        return price_stats_cols
+        
     def getErrEfficiency(self, orders, volume):
         rejOrder=orders[(orders.accepted>0) & (orders.accepted<1)]
         if not rejOrder.empty:
@@ -97,8 +146,10 @@ class DirectDASimulator(object):
     def simulate(self):
         opt=copy.copy(self.option)
         mechanism=self.mechanism
+        cols=['DAPrice', 'BLSPrice', 'Volume', 'AssetPrice', 'InterestRate', 'EffErr', 'BB']
+        cols+=mechanism.getPriceStatCols()
         
-        plotDf=pd.DataFrame(np.zeros([opt.daysToMaturity(), 7]), columns=['DAPrice', 'BLSPrice', 'Volume', 'AssetPrice', 'InterestRate', 'EffErr', 'BB'])
+        plotDf=pd.DataFrame(np.zeros([opt.daysToMaturity(), 23]), columns=cols)
         plotDf['AssetPrice']=self.assetPrices.values
         plotDf['InterestRate']=self.interestRates.values
 
@@ -118,6 +169,10 @@ class DirectDASimulator(object):
             plotDf.ix[i]['Volume']=mechanism.getVolume(orders)
             plotDf.ix[i]['EffErr']=mechanism.getErrEfficiency(orders, plotDf.ix[i]['Volume'])
             plotDf.ix[i]['BB']=mechanism.getBudgetBalance(orders, plotDf.ix[i]['DAPrice'])
+            
+            priceStats=mechanism.getPriceStats(orders)
+            for k in mechanism.getPriceStatCols():
+                plotDf.ix[i][k]=priceStats[k]
             
             print i
         return plotDf

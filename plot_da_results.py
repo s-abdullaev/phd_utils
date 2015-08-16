@@ -23,11 +23,11 @@ import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
 def plotLin(filename, fields):
-    df=pd.read_excel('results/da_experiments/mon_rnd_brwn/'+filename)
+    df=pd.read_excel('results/da_experiments/mon_rnd_jd/'+filename)
     df.plot(y=fields)
 
 def plotHist(filename, fields):
-    df=pd.read_excel('results/da_experiments/mon_rnd_brwn/'+filename)
+    df=pd.read_excel('results/da_experiments/mon_rnd_jd/'+filename)
     df.plot(fields, kind='hist')
 
 

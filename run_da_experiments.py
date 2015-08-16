@@ -18,6 +18,7 @@ from phd_utils.tradingAlgos.DATrader import *
 import scipy.optimize as optim
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+import sys
 
 
 #primary settings
@@ -32,6 +33,8 @@ S0=3563.57
 K=3563.57
 eps=40
 T=1
+
+sigma_eps=0.001
 
 r_mu=0.46
 r_sigma=0.09
@@ -93,7 +96,8 @@ vasicekJumpMdl=VasicekJumpPricing(r_mu, r_sigma, r_theta, r_arrRate, r_muLambda,
 ziOptPricer=ZIPricing(brwnMdl)
 expOptPricer=ExpPricing(brwnMdl, risk_aversion)
 monOptPricer=MonteCarloPricing(brwnMdl, ntrials)
-bsOptPricer=BSPricing([r, r, r], [sigma, sigma-0.002, sigma+0.002])
+monJdOptPricer=MonteCarloPricing(jumpDiffMdl, ntrials)
+bsOptPricer=BSPricing(r, sigma, sigma_eps)
 
 lmsr_neutralPricer1=LMSRPricing(brwnMdl, ntrials, lmsr_liquidity, port_neutral1)
 lmsr_neutralPricer2=LMSRPricing(brwnMdl, ntrials, lmsr_liquidity, port_neutral2)
@@ -121,7 +125,7 @@ constModel=LinearQuantity(qnty_const)
 #traders
 exp_rnd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
 mon_rnd_brwn_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer)
-mon_rnd_jd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monOptPricer)
+mon_rnd_jd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monJdOptPricer)
 bs_rnd_trader=DATrader(QuantityModel=rndModel, OptionPricingModel=bsOptPricer)
 
 lmsr_rnd_neutralTrader1=DATrader(QuantityModel=rndModel, OptionPricingModel=lmsr_neutralPricer1)
@@ -144,12 +148,12 @@ lmsr_rnd_bearTrader2=DATrader(QuantityModel=rndModel, OptionPricingModel=lmsr_be
 
 exp_lin_trader=DATrader(QuantityModel=linModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
 mon_lin_brwn_trader=DATrader(QuantityModel=linModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer)
-mon_lin_jd_trader=DATrader(QuantityModel=linModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monOptPricer)
+mon_lin_jd_trader=DATrader(QuantityModel=linModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monJdOptPricer)
 bs_lin_trader=DATrader(QuantityModel=linModel, OptionPricingModel=bsOptPricer)
 
 exp_const_trader=DATrader(QuantityModel=constModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
 mon_const_brwn_trader=DATrader(QuantityModel=constModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer)
-mon_const_jd_trader=DATrader(QuantityModel=constModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monOptPricer)
+mon_const_jd_trader=DATrader(QuantityModel=constModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monJdOptPricer)
 bs_const_trader=DATrader(QuantityModel=constModel, OptionPricingModel=bsOptPricer)
 
 
@@ -319,19 +323,15 @@ exper.append(DAExperiment("results/da_experiments/mixedMoreRiskAverseTraders1",
 
 for da_exp in exper:
     try:
+        pass
         da_exp.start()
     except:
         print "ERROR:", sys.exc_info()[0] 
 
 #assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
 #mechanisms
-#plotDf=daSim.simulateBSTheta(linAssetPrices)
-#plotDf.plot(x='AssetPrice', y=['DA_Theta', 'BLS_Theta'])
 
-#plotDf=daSim.simulateBSThetaWithTime(matTime)
-#plotDf.plot(x='TimeToMaturity', y=['DA_Theta', 'BLS_Theta'])
-
-#da=DirectDASimulator('test', assetPrices, interestRates, mon_rnd_brwn_trader, call_atm, numTraders)
+#da=DirectDASimulator('test', assetPrices, interestRates, mixedTraders2, call_atm, numTraders)
 #plotDf=da.simulate()
 #plotDf.plot(y=['BLSPrice', 'DAPrice'])
 
