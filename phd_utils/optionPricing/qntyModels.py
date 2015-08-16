@@ -18,21 +18,21 @@ class RandomQuantity(object):
     def __init__(self, qntyRange):
         self.qntyRange=qntyRange
     
-    def getQuantities(self, optionPrices):
+    def getQuantities(self, optionPrices, opt):
         size=len(optionPrices)
         optionPrices['quantities']=np.random.randint(self.qntyRange[0], self.qntyRange[1], size)
         return optionPrices
 
 class LinearQuantity(object):
-    def __init__(self, linParams):
-        self.linParams=linParams
+    def __init__(self, equib_quant):
+        self.equib_quant=equib_quant
     
-    def getQuantities(self, optionPrices):
+    def getQuantities(self, optionPrices, opt):
         def demFunc(x):
-            return np.round(np.max(self.linParams[0]*abs(x)+self.linParams[1], 0))
+            return np.round(np.max((self.equib_quant/opt.blsPrice())*abs(x), 0))
         
         def supFunc(x):
-            return -np.round(abs(self.linParams[2]*abs(x)+self.linParams[3]))
+            return -np.round(2*self.equib_quant-(self.equib_quant/opt.blsPrice())*abs(x))
         
         optionPrices['quantities']=optionPrices['prices'].apply(lambda x: demFunc(x) if np.random.rand()>0.5 else supFunc(x))
         return optionPrices

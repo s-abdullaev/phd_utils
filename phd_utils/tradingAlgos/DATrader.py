@@ -25,7 +25,7 @@ class DATrader(object):
     
     def getOrders(self, optionType, size, **kwargs):
         orders=pd.DataFrame(self.optPricingModel.getPrices(optionType, size))        
-        orders=self.quantityModel.getQuantities(orders)
+        orders=self.quantityModel.getQuantities(orders, optionType)
         orders.columns=['price', 'quantity']
         
         return orders
