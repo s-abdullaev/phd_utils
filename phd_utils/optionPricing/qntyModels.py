@@ -29,7 +29,7 @@ class LinearQuantity(object):
     
     def getQuantities(self, optionPrices):
         def demFunc(x):
-            return np.round(np.min(self.linParams[0]*abs(x)+self.linParams[1], 0))
+            return np.round(np.max(self.linParams[0]*abs(x)+self.linParams[1], 0))
         
         def supFunc(x):
             return -np.round(abs(self.linParams[2]*abs(x)+self.linParams[3]))
