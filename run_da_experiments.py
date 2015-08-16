@@ -30,7 +30,7 @@ jumpMu=-0.004
 jumpSigma=0.0083
 S0=3563.57
 K=3563.57
-eps=50
+eps=40
 T=1
 
 r_mu=0.46
@@ -49,6 +49,12 @@ ntrials=100
 qnty_random=(-2000,2000)
 qnty_const=(0,1200,0,1200)
 qnty_lin=(-1000,1200,1000,200)
+
+
+#lin assets and maturity                         
+linTime=np.linspace(T, 0, 50)
+linAssetPrices=pd.Series(np.arange(3465,3665,5.0), name='AssetPrices')
+
 #option to trade
 call_atm=CallOption(S0=S0,K=K,r=r,sigma=sigma, T=T)
 put_atm=PutOption(S0=S0,K=K,r=r,sigma=sigma, T=T)
@@ -75,12 +81,6 @@ port_bullish2=OptionPortfolio(call_atm, put_atm, eps, OPTION_PORTFOLIOS.ix['Bull
 port_bearish1=OptionPortfolio(call_atm, put_atm, eps, OPTION_PORTFOLIOS.ix['Long Put'])
 port_bearish2=OptionPortfolio(call_atm, put_atm, eps, OPTION_PORTFOLIOS.ix['Bear Call Spread'])
 
-
-#lin assets and maturity                         
-linTime=np.linspace(T, 0, 50)
-linAssetPrices=pd.Series(np.linspace(3465,3665,50), name='AssetPrices')
-
-
 #asset pricing models
 brwnMdl=BrownianPricing(r, sigma)
 jumpDiffMdl=JumpDiffPricing(r, sigma, arrRate, jumpMu, jumpSigma)
@@ -93,7 +93,7 @@ vasicekJumpMdl=VasicekJumpPricing(r_mu, r_sigma, r_theta, r_arrRate, r_muLambda,
 ziOptPricer=ZIPricing(brwnMdl)
 expOptPricer=ExpPricing(brwnMdl, risk_aversion)
 monOptPricer=MonteCarloPricing(brwnMdl, ntrials)
-bsOptPricer=BSPricing([r, r-0.1, r+0.1], [sigma, sigma-0.2, sigma+0.2])
+bsOptPricer=BSPricing([r, r, r], [sigma, sigma-0.002, sigma+0.002])
 
 lmsr_neutralPricer1=LMSRPricing(brwnMdl, ntrials, lmsr_liquidity, port_neutral1)
 lmsr_neutralPricer2=LMSRPricing(brwnMdl, ntrials, lmsr_liquidity, port_neutral2)
@@ -157,8 +157,8 @@ bs_const_trader=DATrader(QuantityModel=constModel, OptionPricingModel=bsOptPrice
 mixedRiskNeutralTraders1=DATraderCollection([mon_rnd_brwn_trader, mon_rnd_jd_trader, bs_rnd_trader], [0.3,0.3,0.4])
 mixedRiskNeutralTraders2=DATraderCollection([mon_rnd_brwn_trader, mon_rnd_jd_trader, bs_rnd_trader], [0.2,0.6,0.2])
 
-mixedRiskNeutralTraders1=DATraderCollection([mon_rnd_brwn_trader, mon_lin_jd_trader, bs_rnd_trader], [0.3,0.3,0.4])
-mixedRiskNeutralTraders2=DATraderCollection([mon_rnd_brwn_trader, mon_lin_jd_trader, bs_rnd_trader], [0.2,0.6,0.2])
+mixedRiskNeutralLinTraders1=DATraderCollection([mon_rnd_brwn_trader, mon_lin_jd_trader, bs_rnd_trader], [0.3,0.3,0.4])
+mixedRiskNeutralLinTraders2=DATraderCollection([mon_rnd_brwn_trader, mon_lin_jd_trader, bs_rnd_trader], [0.2,0.6,0.2])
 
 mixedTraders1=DATraderCollection([exp_rnd_trader, mon_rnd_brwn_trader, bs_rnd_trader], [0.3,0.3,0.4])
 mixedTraders2=DATraderCollection([exp_lin_trader, mon_rnd_jd_trader, bs_rnd_trader], [0.6,0.2,0.2])
@@ -172,37 +172,186 @@ mixedLmsrTraders4=DATraderCollection([lmsr_rnd_neutralTrader4, lmsr_rnd_bullTrad
 assetPrices=pd.read_excel('data/brwn_assetPrices.xls')[0]
 interestRates=pd.Series(np.ones(call_atm.daysToMaturity())*r, name='InterestRate')
 
-#DAExperiment("results/da_experiments/mon_rnd_brwn", assetPrices, interestRates, mon_rnd_brwn_trader,[call_atm, call_otm, call_itm], numTraders, linAssetPrices,  linTime).start()
+
+
+#EXPERIMENTS
+exper=[]
+
+#RISK NEUTRAL TRADERS
+exper.append(DAExperiment("results/da_experiments/mon_rnd_brwn", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_rnd_brwn_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mon_rnd_jd", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_rnd_jd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/vol_rnd", 
+                        assetPrices, 
+                        interestRates, 
+                        bs_rnd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mon_lin_brwn", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_lin_brwn_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mon_lin_jd", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_lin_jd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/vol_lin", 
+                        assetPrices, 
+                        interestRates, 
+                        bs_lin_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+#RISK AVERSE TRADERS
+exper.append(DAExperiment("results/da_experiments/exp_rnd", 
+                        assetPrices, 
+                        interestRates, 
+                        exp_rnd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/exp_lin", 
+                        assetPrices, 
+                        interestRates, 
+                        exp_lin_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+                        
+#PORTFOLIO HOLDING TRADERS
+exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders1", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedLmsrTraders1,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders2", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedLmsrTraders2,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders3", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedLmsrTraders3,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders4", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedLmsrTraders4,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+#MIXED TRADERS
+exper.append(DAExperiment("results/da_experiments/mixedRiskNeutralTraders1", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedRiskNeutralTraders1,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mixedAllTraders1", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedTraders1,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+                        
+exper.append(DAExperiment("results/da_experiments/mixedMoreRiskAverseTraders1", 
+                        assetPrices, 
+                        interestRates, 
+                        mixedTraders2,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+
+
+for da_exp in exper:
+    try:
+        da_exp.start()
+    except:
+        print "ERROR:", sys.exc_info()[0] 
 
 #assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
-
-
 #mechanisms
-
-#plotDf=daMixedSim.simulate()
-#plotDf.plot(y=['BLSPrice', 'DAPrice'])
-
-#plotDf=daSim.simulateDeltaWithTime(matTime)
-#plotDf.plot(x='TimeToMaturity', y=['DA_Delta', 'BLS_Delta'])
-
-#plotDf=daSim.simulateBSGamma(linAssetPrices)
-#plotDf.plot(x='AssetPrice', y=['DA_Gamma', 'BLS_Gamma'])
-
-#plotDf=daSim.simulateGammaWithTime(matTime)
-#plotDf.plot(x='TimeToMaturity', y=['DA_Gamma', 'BLS_Gamma'])
-
-#plotDf=daSim.simulateBSDelta(linAssetPrices)
-#plotDf.plot(x='AssetPrice', y=['DA_Delta', 'BLS_Delta'])
-
-#plotDf=daSim.simulateBSDeltaWithTime(matTime)
-#plotDf.plot(x='TimeToMaturity', y=['DA_Delta', 'BLS_Delta'])
-
 #plotDf=daSim.simulateBSTheta(linAssetPrices)
 #plotDf.plot(x='AssetPrice', y=['DA_Theta', 'BLS_Theta'])
 
 #plotDf=daSim.simulateBSThetaWithTime(matTime)
 #plotDf.plot(x='TimeToMaturity', y=['DA_Theta', 'BLS_Theta'])
-da=DirectDASimulator('test', assetPrices, interestRates, mixedLmsrTraders4, call_atm, numTraders)
-plotDf=da.simulateVolCurve(linAssetPrices)
-plotDf.plot(x='Strikes', y='ImpVol')
 
+#da=DirectDASimulator('test', assetPrices, interestRates, mon_rnd_brwn_trader, call_atm, numTraders)
+#plotDf=da.simulate()
+#plotDf.plot(y=['BLSPrice', 'DAPrice'])
+
+#plotDf=da.simulateVolCurve(linAssetPrices)
+#plotDf.plot(x='Strikes', y='ImpVol')
+#
+#plotDf=da.simulateBSDelta(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y=['DA_Delta', 'BLS_Delta'])
+
+#plotDf=da.simulateBSDeltaWithTime(linTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Delta', 'BLS_Delta'])
+
+#plotDf=da.simulateBSGamma(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y=['DA_Gamma', 'BLS_Gamma'])
+
+#plotDf=da.simulateBSGammaWithTime(linTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Gamma', 'BLS_Gamma'])
+#
+#plotDf=da.simulateBSTheta(linAssetPrices)
+#plotDf.plot(x='AssetPrice', y=['DA_Theta', 'BLS_Theta'])
+
+#plotDf=da.simulateBSThetaWithTime(linTime)
+#plotDf.plot(x='TimeToMaturity', y=['DA_Theta', 'BLS_Theta'])

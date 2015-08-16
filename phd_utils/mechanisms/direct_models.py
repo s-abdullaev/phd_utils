@@ -233,14 +233,10 @@ class DirectDASimulator(object):
             opt.S0=p
             opt2.S0=p
             
-            optPrices=[]
-            for t in range(5):
-                orders=self.traders.getOrders(opt, self.numOrders)
-                orders=mechanism.clearOrders(orders)
-                optPrices.append(mechanism.getPrice(orders))
-            
-            curOptPrice=np.mean(optPrices)
-            opt2.sigma=opt.getImpVol(curOptPrice)
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+                
+            opt2.sigma=opt.getImpVol(mechanism.getPrice(orders))
             
             plotDf.ix[i]['DA_Theta']=opt2.theta()
             plotDf.ix[i]['BLS_Theta']=opt.theta()
@@ -283,14 +279,11 @@ class DirectDASimulator(object):
         for i, p in enumerate(strikes):
             opt.K=p
             opt2=copy.copy(opt)
-            optPrices=[]
-            for t in range(2):
-                orders=self.traders.getOrders(opt, self.numOrders)
-                orders=mechanism.clearOrders(orders)
-                optPrices.append(mechanism.getPrice(orders))
             
-            curOptPrice=np.mean(optPrices)
-            plotDf.ix[i]['ImpVol']=opt2.getImpVol(curOptPrice)
+            orders=self.traders.getOrders(opt, self.numOrders)
+            orders=mechanism.clearOrders(orders)
+            
+            plotDf.ix[i]['ImpVol']=opt2.getImpVol(mechanism.getPrice(orders))
 
             print i     
         return plotDf

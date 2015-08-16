@@ -6,6 +6,8 @@ import scipy.stats as stats
 import scipy.optimize as optim
 import copy
 import vollib.black_scholes.implied_volatility as iv
+import vollib.black_scholes as bls
+import vollib.black_scholes.greeks.analytical as greeks
 
 OPTION_PORTFOLIOS=pd.DataFrame({'Short Call':	[-1, 0, 0, 0, 0, 0],
                          'Long Call': [1, 0, 0, 0, 0, 0],
@@ -69,10 +71,13 @@ class OptionContract(object):
         return stats.norm.cdf(self.d1())
         
     def getImpVol(self, price):
-        print 'price %s, %s, %s' % (price, self.K, self.blsPrice())
-        val=iv.implied_volatility(price, self.S0, self.K ,self.T,self.r,'c')
-        return val if val>self.sigma else self.sigma
-        
+        print price, self.blsPrice()
+        def optPrice(curVol):
+            if curVol<0: return 1000
+            return (price-bls.black_scholes('c', self.S0, self.K, self.T, self.r, curVol))**2
+        v=optim.fmin(optPrice, self.sigma)[0]
+        return v
+                
     def gamma(self):
         NPrime=((2*np.pi)**(-1/2))*np.exp(-0.5*(self.d1())**2)
         return (NPrime/(self.S0*self.sigma*self.T**(1/2)))
