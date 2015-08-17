@@ -18,18 +18,66 @@ from phd_utils.tradingAlgos.DATrader import *
 import scipy.optimize as optim
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.gridspec as mgridspec
 import seaborn as sns
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
-def plotLin(filename, fields):
-    df=pd.read_excel('results/da_experiments/mixedMoreRiskAverseTraders1/'+filename)
-    df.plot(y=fields)
 
-def plotHist(filename, fields):
-    df=pd.read_excel('results/da_experiments/mixedMoreRiskAverseTraders1/'+filename)
-    df.plot(fields, kind='hist')
+plotFolder='results/da_experiments/mixedMoreRiskAverseTraders1/'
+optionNames=['atm', 'otm', 'itm']
 
+fig=plt.figure(figsize=(8,15))
+gs=mgridspec.GridSpec(6,1, height_ratios=[3,1,3,1,3,1])
+isShown=False
+i=0
+for oName in optionNames:
+    marketDf=pd.read_excel(plotFolder+oName+'_Market.xls')
+    ax1=plt.subplot(gs[i])
+    #plt.gca().set_color_cycle(['blue', 'red'])
+    blsPrices, =ax1.plot(marketDf.index, marketDf['BLSPrice'], color='blue', label='Black-Scholes Price')
+    daPrices, =ax1.plot(marketDf.index, marketDf['DAPrice'], color='red', label='DA Price')
+    ax1.fill_between(marketDf.index,  marketDf['accepted_ask_min'], marketDf['accepted_bid_max'], facecolor='green', alpha=0.4)
+    ax1.fill_between(marketDf.index,  marketDf['rejected_ask_max'], marketDf['rejected_bid_min'], facecolor='yellow', alpha=0.4)
+    
+    acceptedOrders=mpatches.Patch(color='green', label='Accepted Orders')
+    rejectedOrders=mpatches.Patch(color='yellow', label='Rejected Orders')
+    volumePatch=mpatches.Patch(color='gray', label='Traded Volume')
+    effErrPatch=mpatches.Patch(color='b', label='Rejected Efficient Trades')
+    
+    plt.setp(ax1.get_xticklabels(), visible=False)
+    ax1.grid(True)
+    
+    ax1.set_xlim([0, marketDf.index[-1]])
+    ax1.set_title(oName.upper() +' Option Prices until Expiration Date', fontsize=14, fontweight='bold')
+    ax1.set_ylabel('Option Prices', fontsize=14, fontweight='bold')
+    if not isShown:
+        ax1.legend(loc='upper left', fontsize=12, handles=[blsPrices, daPrices, acceptedOrders, rejectedOrders, volumePatch, effErrPatch])
+    i+=1
+
+    ax2=plt.subplot(gs[i])
+    vols=np.row_stack((marketDf['Volume'], marketDf['Volume']*(1+marketDf['EffErr'])))
+    ax2.fill_between(marketDf.index, 0, vols[0,:], facecolor='gray', alpha=.6)
+    ax2.fill_between(marketDf.index, vols[0,:], vols[1,:], facecolor='b')
+    
+    ax2.set_xlim([0, marketDf.index[-1]])
+    
+    ax2.set_ylabel('Volume', fontsize=14, fontweight='bold')
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    if i==5:
+        ax2.set_xlabel('Time', fontsize=14, fontweight='bold')
+        plt.setp(ax2.get_xticklabels(), visible=True)
+    isShown=True
+    i+=1
+
+#def plotLin(filename, fields):
+#    df=pd.read_excel('results/da_experiments/mixedMoreRiskAverseTraders1/'+filename)
+#    df.plot(y=fields)
+#
+#def plotHist(filename, fields):
+#    df=pd.read_excel('results/da_experiments/mixedMoreRiskAverseTraders1/'+filename)
+#    df.plot(fields, kind='hist')
 
 #r=0.0007
 #sigma=0.0089
