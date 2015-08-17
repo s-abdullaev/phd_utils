@@ -19,6 +19,17 @@ from scipy.misc import derivative
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 
+def getImpVol(price, opt, prev_sigmas):
+    print price, opt.blsPrice()
+    def optPrice(curVol):
+        return (price-bls.black_scholes('c', opt.S0, opt.K, opt.T, opt.r, curVol))**2
+    v=optim.fminbound(optPrice, 0,10,maxfun=500, disp=0)
+    prev_sigmas.append(v)
+    pSigmas=np.array(prev_sigmas)    
+    countNonZeros=len(pSigmas[pSigmas>0])
+    
+    return sum(prev_sigmas)/countNonZeros
+
 class DirectDA(object):
     #sm allocation rule
     def clearOrders(self, orders):
@@ -58,7 +69,12 @@ class DirectDA(object):
         else:
             min_off_ask=orders[(orders.accepted > 0) & (orders.quantity < 0)]['price'].max()
         
-        return 0.5*(max_off_bid+min_off_ask)
+        p=0.5*(max_off_bid+min_off_ask)
+        
+        if np.isnan(p):
+            p=np.mean(orders.price)
+        
+        return p
     
     def getVolume(self, orders):
         clrBids=orders[(orders.accepted > 0) & (orders.quantity > 0)]
@@ -184,7 +200,7 @@ class DirectDASimulator(object):
         
         plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Delta', 'BLS_Delta'])
         plotDf['AssetPrice']=assetPrices.values
-        
+        prev_sigmas=[]
         for i, p in enumerate(assetPrices.values):
             opt.S0=p
             opt2.S0=p
@@ -193,7 +209,8 @@ class DirectDASimulator(object):
             orders=mechanism.clearOrders(orders)
             
             curOptPrice=mechanism.getPrice(orders)
-            opt2.sigma=opt.getImpVol(curOptPrice)
+            opt2.sigma=getImpVol(curOptPrice, opt, prev_sigmas[-4:])
+            prev_sigmas.append(opt2.sigma)            
             
             plotDf.ix[i]['DA_Delta']=opt2.delta()
             plotDf.ix[i]['BLS_Delta']=opt.delta()
@@ -210,15 +227,17 @@ class DirectDASimulator(object):
         plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Delta', 'BLS_Delta'])
         plotDf['TimeToMaturity']=timeSteps
         
+        prev_sigmas=[]
         for i, p in enumerate(timeSteps):
             opt.T=p
             opt2.T=p
-        
-            orders=self.traders.getOrders(opt, self.numOrders)
+           
+            orders=self.traders.getOrders(opt, self.numOrders)         
             orders=mechanism.clearOrders(orders)
             
             curOptPrice=mechanism.getPrice(orders)
-            opt2.sigma=opt.getImpVol(curOptPrice)
+            opt2.sigma=getImpVol(curOptPrice, opt, prev_sigmas[-4:])
+            prev_sigmas.append(opt2.sigma)            
             
             plotDf.ix[i]['DA_Delta']=opt2.delta()
             plotDf.ix[i]['BLS_Delta']=opt.delta()
@@ -235,6 +254,7 @@ class DirectDASimulator(object):
         plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Gamma', 'BLS_Gamma'])
         plotDf['AssetPrice']=assetPrices.values
         
+        prev_sigmas=[]
         for i, p in enumerate(assetPrices.values):
             opt.S0=p
             opt2.S0=p
@@ -243,7 +263,8 @@ class DirectDASimulator(object):
             orders=mechanism.clearOrders(orders)
             
             curOptPrice=mechanism.getPrice(orders)
-            opt2.sigma=opt.getImpVol(curOptPrice)
+            opt2.sigma=getImpVol(curOptPrice, opt, prev_sigmas[-4:])
+            prev_sigmas.append(opt2.sigma)            
             
             plotDf.ix[i]['DA_Gamma']=opt2.gamma()
             plotDf.ix[i]['BLS_Gamma']=opt.gamma()
@@ -260,6 +281,7 @@ class DirectDASimulator(object):
         plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Gamma', 'BLS_Gamma'])
         plotDf['TimeToMaturity']=timeSteps
         
+        prev_sigmas=[]
         for i, p in enumerate(timeSteps):
             opt.T=p
             opt2.T=p
@@ -268,7 +290,8 @@ class DirectDASimulator(object):
             orders=mechanism.clearOrders(orders)
             
             curOptPrice=mechanism.getPrice(orders)
-            opt2.sigma=opt.getImpVol(curOptPrice)
+            opt2.sigma=getImpVol(curOptPrice, opt, prev_sigmas[-4:])
+            prev_sigmas.append(opt2.sigma)            
             
             plotDf.ix[i]['DA_Gamma']=opt2.gamma()
             plotDf.ix[i]['BLS_Gamma']=opt.gamma()
@@ -284,14 +307,17 @@ class DirectDASimulator(object):
         plotDf=pd.DataFrame(np.zeros([len(assetPrices), 3]), columns=['AssetPrice', 'DA_Theta', 'BLS_Theta'])
         plotDf['AssetPrice']=assetPrices.values
         
+        prev_sigmas=[]
         for i, p in enumerate(assetPrices.values):
             opt.S0=p
             opt2.S0=p
             
             orders=self.traders.getOrders(opt, self.numOrders)
             orders=mechanism.clearOrders(orders)
-                
-            opt2.sigma=opt.getImpVol(mechanism.getPrice(orders))
+
+            curOptPrice=mechanism.getPrice(orders)                
+            opt2.sigma=getImpVol(curOptPrice, opt, prev_sigmas[-4:])
+            prev_sigmas.append(opt2.sigma)            
             
             plotDf.ix[i]['DA_Theta']=opt2.theta()
             plotDf.ix[i]['BLS_Theta']=opt.theta()
@@ -308,6 +334,7 @@ class DirectDASimulator(object):
         plotDf=pd.DataFrame(np.zeros([len(timeSteps), 3]), columns=['TimeToMaturity', 'DA_Theta', 'BLS_Theta'])
         plotDf['TimeToMaturity']=timeSteps
         
+        prev_sigmas=[]
         for i, p in enumerate(timeSteps):
             opt.T=p
             opt2.T=p
@@ -316,7 +343,8 @@ class DirectDASimulator(object):
             orders=mechanism.clearOrders(orders)
             
             curOptPrice=mechanism.getPrice(orders)
-            opt2.sigma=opt.getImpVol(curOptPrice)
+            opt2.sigma=getImpVol(curOptPrice, opt, prev_sigmas[-4:])
+            prev_sigmas.append(opt2.sigma)            
             
             plotDf.ix[i]['DA_Theta']=opt2.theta()
             plotDf.ix[i]['BLS_Theta']=opt.theta()
@@ -331,15 +359,16 @@ class DirectDASimulator(object):
         plotDf=pd.DataFrame(np.zeros([len(strikes), 2]), columns=['Strikes', 'ImpVol'])
         plotDf['Strikes']=strikes
         
+        prev_sigmas=[]
         for i, p in enumerate(strikes):
             opt.K=p
             opt2=copy.copy(opt)
             
             orders=self.traders.getOrders(opt, self.numOrders)
             orders=mechanism.clearOrders(orders)
-            
-            plotDf.ix[i]['ImpVol']=opt2.getImpVol(mechanism.getPrice(orders))
+            plotDf.ix[i]['ImpVol']=getImpVol(mechanism.getPrice(orders), opt, prev_sigmas[-4:])
 
+            prev_sigmas.append(plotDf.ix[i]['ImpVol'])
             print i     
         return plotDf
     

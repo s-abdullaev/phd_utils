@@ -75,7 +75,7 @@ class OptionContract(object):
         def optPrice(curVol):
             if curVol<0: return 1000
             return (price-bls.black_scholes('c', self.S0, self.K, self.T, self.r, curVol))**2
-        v=optim.fmin(optPrice, self.sigma)[0]
+        v=optim.fmin(optPrice, self.sigma, maxfun=500, disp=0)[0]
         return v
                 
     def gamma(self):
