@@ -139,7 +139,8 @@ class ExpPricing(object):
         for i in range(size):
             curPrices=self.model.generate(opt.S0, 100, days)
             curOptPrices=curPrices.apply(lambda x: opt.payoff(x))        
-            p=optim.fsolve(expectedUtil, opt.blsPrice())
+            p=optim.zeros.newton(expectedUtil, opt.blsPrice())               
+            
             optPrices.append(p)
         return pd.Series(optPrices, name='prices')
         

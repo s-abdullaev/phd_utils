@@ -182,50 +182,50 @@ interestRates=pd.Series(np.ones(call_atm.daysToMaturity())*r, name='InterestRate
 exper=[]
 
 #RISK NEUTRAL TRADERS
-#exper.append(DAExperiment("results/da_experiments/mon_rnd_brwn", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        mon_rnd_brwn_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
-#
-#exper.append(DAExperiment("results/da_experiments/mon_rnd_jd", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        mon_rnd_jd_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
-#
-#exper.append(DAExperiment("results/da_experiments/vol_rnd", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        bs_rnd_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
-#
-#exper.append(DAExperiment("results/da_experiments/mon_lin_brwn", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        mon_lin_brwn_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
-#
-#exper.append(DAExperiment("results/da_experiments/mon_lin_jd", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        mon_lin_jd_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
+exper.append(DAExperiment("results/da_experiments/mon_rnd_brwn", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_rnd_brwn_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mon_rnd_jd", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_rnd_jd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/vol_rnd", 
+                        assetPrices, 
+                        interestRates, 
+                        bs_rnd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mon_lin_brwn", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_lin_brwn_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
+
+exper.append(DAExperiment("results/da_experiments/mon_lin_jd", 
+                        assetPrices, 
+                        interestRates, 
+                        mon_lin_jd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
 
 #exper.append(DAExperiment("results/da_experiments/vol_lin", 
 #                        assetPrices, 
@@ -237,23 +237,23 @@ exper=[]
 #                        linTime))
 
 #RISK AVERSE TRADERS
-#exper.append(DAExperiment("results/da_experiments/exp_rnd", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        exp_rnd_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
+exper.append(DAExperiment("results/da_experiments/exp_rnd", 
+                        assetPrices, 
+                        interestRates, 
+                        exp_rnd_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
 
-#exper.append(DAExperiment("results/da_experiments/exp_lin", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        exp_lin_trader,
-#                        [call_atm, call_otm, call_itm], 
-#                        numTraders, 
-#                        linAssetPrices,
-#                        linTime))
+exper.append(DAExperiment("results/da_experiments/exp_lin", 
+                        assetPrices, 
+                        interestRates, 
+                        exp_lin_trader,
+                        [call_atm, call_otm, call_itm], 
+                        numTraders, 
+                        linAssetPrices,
+                        linTime))
 #                        
 #PORTFOLIO HOLDING TRADERS
 #exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders1", 
@@ -331,9 +331,9 @@ for da_exp in exper:
 #assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
 #mechanisms
 #
-da=DirectDASimulator('test', assetPrices, interestRates, exp_lin_trader, call_atm, numTraders)
-plotDf=da.simulate()
-plotDf.plot(y=['BLSPrice', 'DAPrice'])
+#da=DirectDASimulator('test', assetPrices, interestRates, exp_lin_trader, call_itm, numTraders)
+#plotDf=da.simulate()
+#plotDf.plot(y=['BLSPrice', 'DAPrice','accepted_bid_max','rejected_bid_max', 'accepted_ask_min','rejected_ask_min'])
 
 #plotDf=da.simulateVolCurve(linAssetPrices)
 #plotDf.plot(x='Strikes', y='ImpVol')
@@ -343,13 +343,13 @@ plotDf.plot(y=['BLSPrice', 'DAPrice'])
 
 #plotDf=da.simulateBSDeltaWithTime(linTime)
 #plotDf.plot(x='TimeToMaturity', y=['DA_Delta', 'BLS_Delta'])
-
+#
 #plotDf=da.simulateBSGamma(linAssetPrices)
 #plotDf.plot(x='AssetPrice', y=['DA_Gamma', 'BLS_Gamma'])
 
 #plotDf=da.simulateBSGammaWithTime(linTime)
 #plotDf.plot(x='TimeToMaturity', y=['DA_Gamma', 'BLS_Gamma'])
-#
+##
 #plotDf=da.simulateBSTheta(linAssetPrices)
 #plotDf.plot(x='AssetPrice', y=['DA_Theta', 'BLS_Theta'])
 

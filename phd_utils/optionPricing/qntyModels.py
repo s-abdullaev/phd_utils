@@ -29,10 +29,19 @@ class LinearQuantity(object):
     
     def getQuantities(self, optionPrices, opt):
         def demFunc(x):
-            return np.round(np.max((self.equib_quant/opt.blsPrice())*abs(x), 0))
+            if opt.blsPrice()>0:
+                val=abs(x)*self.equib_quant/opt.blsPrice()
+            else:
+                val=0
+            return val
         
         def supFunc(x):
-            return -np.round(2*self.equib_quant-(self.equib_quant/opt.blsPrice())*abs(x))
+            if opt.blsPrice()>0:
+                val=2*self.equib_quant-(self.equib_quant/opt.blsPrice())*abs(x)
+            else:
+                val=2*self.equib_quant
+            
+            return -np.round(val)
         
         optionPrices['quantities']=optionPrices['prices'].apply(lambda x: demFunc(x) if np.random.rand()>0.5 else supFunc(x))
         return optionPrices
