@@ -24,9 +24,12 @@ import seaborn as sns
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
+expName='vol_rnd'
+plotFolder='results/da_experiments/%s/' % expName
+outputPath='plots/da_experiments/%s_Markets' % expName
 
-plotFolder='results/da_experiments/mixedMoreRiskAverseTraders1/'
 optionNames=['atm', 'otm', 'itm']
+sns.set_style("whitegrid")
 
 fig=plt.figure(figsize=(8,15))
 gs=mgridspec.GridSpec(6,1, height_ratios=[3,1,3,1,3,1])
@@ -38,11 +41,12 @@ for oName in optionNames:
     #plt.gca().set_color_cycle(['blue', 'red'])
     blsPrices, =ax1.plot(marketDf.index, marketDf['BLSPrice'], color='blue', label='Black-Scholes Price')
     daPrices, =ax1.plot(marketDf.index, marketDf['DAPrice'], color='red', label='DA Price')
-    ax1.fill_between(marketDf.index,  marketDf['accepted_ask_min'], marketDf['accepted_bid_max'], facecolor='green', alpha=0.4)
-    ax1.fill_between(marketDf.index,  marketDf['rejected_ask_max'], marketDf['rejected_bid_min'], facecolor='yellow', alpha=0.4)
+    ax1.fill_between(marketDf.index,  marketDf['accepted_ask_min'], marketDf['accepted_bid_max'], facecolor='yellow', alpha=0.4)
+#    ax1.fill_between(marketDf.index,  marketDf['rejected_ask_min'], marketDf['rejected_ask_max'], facecolor='yellow', alpha=0.4)
+#    ax1.fill_between(marketDf.index,  marketDf['rejected_bid_min'], marketDf['rejected_bid_max'], facecolor='yellow', alpha=0.4)
     
-    acceptedOrders=mpatches.Patch(color='green', label='Accepted Orders')
-    rejectedOrders=mpatches.Patch(color='yellow', label='Rejected Orders')
+    acceptedOrders=mpatches.Patch(color='yellow', label='Accepted Orders')
+#    rejectedOrders=mpatches.Patch(color='yellow', label='Rejected Orders')
     volumePatch=mpatches.Patch(color='gray', label='Traded Volume')
     effErrPatch=mpatches.Patch(color='b', label='Rejected Efficient Trades')
     
@@ -53,7 +57,7 @@ for oName in optionNames:
     ax1.set_title(oName.upper() +' Option Prices until Expiration Date', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Option Prices', fontsize=14, fontweight='bold')
     if not isShown:
-        ax1.legend(loc='upper left', fontsize=12, handles=[blsPrices, daPrices, acceptedOrders, rejectedOrders, volumePatch, effErrPatch])
+        ax1.legend(loc='upper right', frameon=True, framealpha=0.7,  fontsize=12, handles=[blsPrices, daPrices, acceptedOrders])
     i+=1
 
     ax2=plt.subplot(gs[i])
@@ -70,6 +74,9 @@ for oName in optionNames:
         plt.setp(ax2.get_xticklabels(), visible=True)
     isShown=True
     i+=1
+
+plt.tight_layout()
+fig.savefig(outputPath, dpi=300)
 
 #def plotLin(filename, fields):
 #    df=pd.read_excel('results/da_experiments/mixedMoreRiskAverseTraders1/'+filename)
