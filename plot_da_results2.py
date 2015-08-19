@@ -26,7 +26,7 @@ import seaborn as sns
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
-expName='vol_lin'
+expName='mixedAllTraders1'
 plotFolder='results/da_experiments/%s/' % expName
 outputPath='plots/da_experiments/%s_Greeks' % expName
 
@@ -55,7 +55,7 @@ ax.legend(['DA ITM',' DA ATM', 'DA OTM'], loc='upper right', frameon=True, frame
 #Budget Balance
 ax=plt.subplot(gs[1])
 ax.hist(itm_marketDf[['BB_itm','BB', 'BB_otm']].values,bins=np.arange(-2e5, 2e5+1, 5e4, dtype='int'), histtype='bar', normed=1, color=da_colorcycle)
-ax.set_xticks(np.arange(-2e5, 2e5+1, 5e4, dtype='int'))
+#ax.set_xticks(np.arange(-2e5, 2e5+1, 5e4, dtype='int'))
 ax.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.e'))
 ax.set_title('Budget Balance', fontsize=14, fontweight='bold')
 ax.set_xlabel('Profit/Loss', fontsize=12, fontweight='bold')
