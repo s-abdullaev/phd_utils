@@ -10,9 +10,8 @@ from matplotlib import cm
 import scipy.optimize as opt
 import numpy as np
 
-class ZIPTrader(object):
-    def __init__(self, name, price):
-        self.name=name
+class ZIPProxyAlgo(object):
+    def __init__(self, price):
         self.tradeNum=0
         self.price=price
         self.curBid=price

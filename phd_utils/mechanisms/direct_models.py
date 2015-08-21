@@ -19,17 +19,6 @@ from scipy.misc import derivative
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 
-def getImpVol(price, opt, prev_sigmas):
-    print price, opt.blsPrice()
-    def optPrice(curVol):
-        return (price-bls.black_scholes('c', opt.S0, opt.K, opt.T, opt.r, curVol))**2
-    v=optim.fminbound(optPrice, 0,10,maxfun=500, disp=0)
-    prev_sigmas.append(v)
-    pSigmas=np.array(prev_sigmas)    
-    countNonZeros=len(pSigmas[pSigmas>0])
-    
-    return sum(prev_sigmas)/countNonZeros
-
 class DirectDA(object):
     #sm allocation rule
     def clearOrders(self, orders):
