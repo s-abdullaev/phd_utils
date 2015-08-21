@@ -130,7 +130,7 @@ interestRates=pd.Series(np.ones(call_atm.daysToMaturity())*r, name='InterestRate
 
 #traders
 traders=[]
-traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo()) for i in range(30)])
+traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo()) for i in range(30)])
 traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monJdOptPricer, ProxyTradingModel=ZIPProxyAlgo()) for i in range(30,60)])
 traders.extend([CDATrader(i, QuantityModel=rndModel, OptionPricingModel=expOptPricer, ProxyTradingModel=ZIPProxyAlgo()) for i in range(60,90)])
 

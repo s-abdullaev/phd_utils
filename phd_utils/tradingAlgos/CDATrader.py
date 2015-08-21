@@ -31,12 +31,8 @@ class CDATrader(object):
         self.orders=pd.DataFrame(self.optPricingModel.getPrices(opt, 1))        
         self.orders=self.quantityModel.getQuantities(self.orders, opt)
         self.orders.columns=['price', 'quantity']
+        self.proxyTradingModel.updateOptionPrice(self.orders['price'][0])
         
-        self.proxyTradingModel=ZIPProxyAlgo()
-        self.proxyTradingModel.price=self.orders['price'][0]
-        self.proxyTradingModel.curAsk=self.orders['price'][0]
-        self.proxyTradingModel.curBid=self.orders['price'][0]
-    
     def updateLastOrder(self, trades, lastOrder):
         self.proxyTradingModel.update(trades, lastOrder)        
         
@@ -49,6 +45,92 @@ class CDATrader(object):
                 'price' : max(quote, 0.001),
                 'trade_id' : self.id}
                 
+                
+class GDProxyAlgo(object):
+    def __init__(self):
+        self.price=0
+        self.acceptedAsks=[]
+        self.asks=[]
+        self.rejectedAsks=[]
+        self.acceptedBids=[]
+        self.bids=[]
+        self.rejectedBids=[]
+        self.ob=None
+
+    
+    def updateOptionPrice(self, price):
+        self.price=price
+        
+    def update(self, trades, lastOrder):
+        lastOrder['ratio']=lastOrder['price']/self.price
+        if lastOrder['side']=='ask':
+            self.asks.append(lastOrder)
+            if lastOrder['isFilled']:
+                self.acceptedAsks.append(lastOrder)
+            else:
+                self.rejectedAsks.append(lastOrder)
+        else:
+            self.bids.append(lastOrder)
+            if lastOrder['isFilled']:
+                self.acceptedBids.append(lastOrder)
+            else:
+                self.rejectedBids.append(lastOrder)
+    
+    def totalAcceptedBids(self, ratio):
+        return len([o for o in self.acceptedBids if ratio<=o['ratio']])
+    
+    def totalRejectedBids(self, ratio):
+        return len([o for o in self.rejectedBids if ratio>=o['ratio']])
+        
+    def totalBids(self, ratio):
+        return len([o for o in self.bids if ratio>=o['ratio']])        
+
+    def totalAcceptedAsks(self, ratio):
+        return len([o for o in self.acceptedAsks if ratio>=o['ratio']])
+    
+    def totalRejectedAsks(self, ratio):
+        return len([o for o in self.rejectedAsks if ratio<=o['ratio']])
+
+    def totalAsks(self, ratio):
+        return len([o for o in self.asks if ratio<=o['ratio']])
+    
+    def getCurBounds(self):
+        bestAsk=self.ob.get_best_ask() if self.ob.get_best_ask() else self.price*np.random.uniform(1.00, 1.05)
+        bestBid=self.ob.get_best_bid() if self.ob.get_best_bid() else self.price*np.random.uniform(0.95, 1.00)
+        if bestBid>bestAsk: bestBid=bestAsk*np.random.uniform(0.95, 1.00)
+        return bestBid/self.price, bestAsk/self.price
+        
+    def getBidSuccessProb(self, ratio):
+        denom=self.totalAcceptedBids(ratio)+self.totalAsks(ratio)+self.totalRejectedBids(ratio)
+        numer=self.totalAcceptedBids(ratio)+self.totalAsks(ratio)
+        
+        if denom==0: return 0
+        return numer/denom
+    
+    def getAskSuccessProb(self, ratio):
+        denom=self.totalAcceptedAsks(ratio)+self.totalBids(ratio)+self.totalRejectedAsks(ratio)
+        numer=self.totalAcceptedAsks(ratio)+self.totalBids(ratio)
+        
+        if denom==0: return 0
+        return numer/denom
+    
+    def getBid(self):
+        def objFunc(ratio):
+            #if ratio>=1: return 0
+            return -(1-ratio)*self.price*self.getBidSuccessProb(ratio)
+        b1, b2=self.getCurBounds()
+        bestRatio=optim.fminbound(objFunc, b1, b2)
+        return bestRatio*self.price
+    
+    def getAsk(self):
+        def objFunc(ratio):
+            #if ratio<=1: return 0
+            return -(ratio-1)*self.price*self.getAskSuccessProb(ratio)       
+        #maxRatio=np.max([o['ratio'] for o in self.bids]) if len(self.bids) else 2
+        b1, b2=self.getCurBounds()
+        bestRatio=optim.fminbound(objFunc, b1, b2)
+        return bestRatio*self.price
+        
 class ZIPProxyAlgo(object):
     def __init__(self):
         self.price=0
@@ -60,6 +142,15 @@ class ZIPProxyAlgo(object):
         self.curAskGamma=0
         self.beta=np.random.uniform(0.1,0.5) ## learning coef
         self.gamma=np.random.uniform(0.0,1.0) ## momentum on trend
+    
+    def updateOptionPrice(self, price):
+        self.price=price
+        self.curBid=price
+        self.curAsk=price
+        self.curBidMargin=np.random.uniform(0.1, 0.5)
+        self.curAskMargin=np.random.uniform(0.1, 0.5)
+        self.curBidGamma=0
+        self.curAskGamma=0
     
     def update(self, trades, lastOrder):
         if (lastOrder['isFilled']):

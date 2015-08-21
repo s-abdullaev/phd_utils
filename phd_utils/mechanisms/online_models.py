@@ -92,6 +92,9 @@ class OnlineDASimulator():
         plotDf['AssetPrice']=self.assetPrices.values
         plotDf['InterestRate']=self.interestRates.values
         
+        for trader1 in self.traders:
+            trader1.proxyTradingModel.ob=mechanism.ob
+        
         steps=np.linspace(opt.T, 0, opt.daysToMaturity())
         for i, t, p, r in zip(range(opt.daysToMaturity()), steps, self.assetPrices.values, self.interestRates.values):
             opt.T=t
@@ -111,7 +114,7 @@ class OnlineDASimulator():
                 for trader2 in self.traders:
                     trader2.updateLastOrder(trades, order)
             
-            print opt.blsPrice(), self.traders[0].proxyTradingModel.price, self.traders[0].proxyTradingModel.curAsk, self.traders[0].proxyTradingModel.curBid
+            print opt.blsPrice(), self.traders[0].proxyTradingModel.price, self.traders[0].proxyTradingModel.getAsk(), self.traders[0].proxyTradingModel.getBid()
             
             
             plotDf.ix[i]['CDAOpen']=mechanism.getOpenPrice()
