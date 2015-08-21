@@ -130,9 +130,9 @@ interestRates=pd.Series(np.ones(call_atm.daysToMaturity())*r, name='InterestRate
 
 #traders
 traders=[]
-traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo()) for i in range(30)])
-traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monJdOptPricer, ProxyTradingModel=ZIPProxyAlgo()) for i in range(30,60)])
-traders.extend([CDATrader(i, QuantityModel=rndModel, OptionPricingModel=expOptPricer, ProxyTradingModel=ZIPProxyAlgo()) for i in range(60,90)])
+traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo(i)) for i in range(30)])
+traders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monJdOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(30,60)])
+traders.extend([CDATrader(i, QuantityModel=rndModel, OptionPricingModel=expOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(60,90)])
 
 cda=OnlineDASimulator('test', assetPrices, interestRates, traders, call_atm)
 

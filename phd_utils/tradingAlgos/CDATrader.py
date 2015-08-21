@@ -45,9 +45,53 @@ class CDATrader(object):
                 'price' : max(quote, 0.001),
                 'trade_id' : self.id}
                 
+class GarmanProxyAlgo(object):
+    def __init__(self, id):
+        self.cash=np.random.randint(1e5, 5e5)
+        self.options=np.random.randint(2e5, 5e5)
+        self.trades=[]
+        self.acceptedAsks=[]
+        self.asks=[]
+        self.rejectedAsks=[]
+        self.acceptedBids=[]
+        self.bids=[]
+        self.rejectedBids=[]
+        self.price=0
+        self.id=id
+        self.ob=None
+        
+    def updateOptionPrice(self, price):
+        self.price=price
+    
+    def update(self, trades, lOrder):
+        lastOrder=copy.copy(lOrder)
+        lastOrder['ratio']=copy.copy(lastOrder['price'])/self.price
+        if lastOrder['side']=='ask':
+            self.asks.append(lastOrder)
+            if lastOrder['isFilled']:
+                self.acceptedAsks.append(lastOrder)
+            else:
+                self.rejectedAsks.append(lastOrder)
+        else:
+            self.bids.append(lastOrder)
+            if lastOrder['isFilled']:
+                self.acceptedBids.append(lastOrder)
+            else:
+                self.rejectedBids.append(lastOrder)
+
+    def getLambdaAsk(self, ratio):
+        if self.totalAsks(ratio)==0: return self.equib_qnty
                 
+        
+        
+    def totalAcceptedAsks(self, ratio):
+        return len([o for o in self.acceptedAsks if ratio>=o['ratio']])
+        
+    def totalAsks(self, ratio):
+        return len([o for o in self.asks if ratio<=o['ratio']])
+        
 class GDProxyAlgo(object):
-    def __init__(self):
+    def __init__(self, id):
         self.price=0
         self.acceptedAsks=[]
         self.asks=[]
@@ -56,12 +100,14 @@ class GDProxyAlgo(object):
         self.bids=[]
         self.rejectedBids=[]
         self.ob=None
+        self.id=id
 
     
     def updateOptionPrice(self, price):
         self.price=price
         
-    def update(self, trades, lastOrder):
+    def update(self, trades, lOrder):
+        lastOrder=copy.copy(lOrder)
         lastOrder['ratio']=lastOrder['price']/self.price
         if lastOrder['side']=='ask':
             self.asks.append(lastOrder)
@@ -132,8 +178,9 @@ class GDProxyAlgo(object):
         return bestRatio*self.price
         
 class ZIPProxyAlgo(object):
-    def __init__(self):
+    def __init__(self, id):
         self.price=0
+        self.id=id
         self.curBid=None
         self.curAsk=None
         self.curBidMargin=np.random.uniform(0.1, 0.5)
