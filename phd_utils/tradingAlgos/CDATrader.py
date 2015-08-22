@@ -47,7 +47,7 @@ class CDATrader(object):
                 
 class GarmanProxyAlgo(object):
     def __init__(self, id):
-        self.cash=np.random.randint(1e5, 5e5)
+        self.cash=float(np.random.randint(1e5, 5e5))
         self.options=np.random.randint(2e5, 5e5)
         self.trades=[]
         self.acceptedAsks=[]
@@ -59,6 +59,8 @@ class GarmanProxyAlgo(object):
         self.price=0
         self.id=id
         self.ob=None
+        self.curAsk=0
+        self.curBid=0
         
     def updateOptionPrice(self, price):
         self.price=price
@@ -66,6 +68,16 @@ class GarmanProxyAlgo(object):
     def update(self, trades, lOrder):
         lastOrder=copy.copy(lOrder)
         lastOrder['ratio']=copy.copy(lastOrder['price'])/self.price
+        for t in trades:
+            traderId1, side1, _=t['party1']
+            traderId2, side2, _=t['party2']
+            if traderId1==self.id:
+                self.cash-=float(t['quantity']*t['price'])
+                self.options+=t['quantity']
+            if traderId2==self.id:
+                self.cash+=float(t['quantity']*t['price'])
+                self.options-=t['quantity']
+        
         if lastOrder['side']=='ask':
             self.asks.append(lastOrder)
             if lastOrder['isFilled']:
@@ -80,15 +92,34 @@ class GarmanProxyAlgo(object):
                 self.rejectedBids.append(lastOrder)
 
     def getLambdaAsk(self, ratio):
-        if self.totalAsks(ratio)==0: return self.equib_qnty
-                
+        return float(max(4000.0-2000.0*ratio,0))
+    
+    def getLambdaBid(self, ratio):
+        return float(2000.0*ratio)
         
-        
-    def totalAcceptedAsks(self, ratio):
-        return len([o for o in self.acceptedAsks if ratio>=o['ratio']])
-        
-    def totalAsks(self, ratio):
-        return len([o for o in self.asks if ratio<=o['ratio']])
+    def getPrices(self):
+        def garmanObjective(ratios):
+            r_a, r_b=ratios
+            p_a, p_b=self.price*r_a, self.price*r_b
+            if np.any(np.array([p_a, p_b])==0):
+                return 1.0
+            elif p_a*self.getLambdaAsk(r_a) < p_b*self.getLambdaBid(r_b):
+                return 1.0
+            elif self.getLambdaBid(r_b) < self.getLambdaAsk(r_a):
+                return 1.0
+            else:
+                return 0.5*(((self.getLambdaBid(r_b)*p_b)/(self.getLambdaAsk(r_a)*p_a))**(self.cash/self.price)+(self.getLambdaAsk(r_a)/self.getLambdaBid(r_b))**float(self.options))
+        r_a, r_b =optim.fmin(garmanObjective, [1.05,1], disp=0)
+        self.curAsk=self.price*r_a
+        self.curBid=self.price*r_b
+    
+    def getBid(self):
+        self.getPrices()
+        return self.curBid
+    
+    def getAsk(self):
+        self.getPrices()
+        return self.curAsk
         
 class GDProxyAlgo(object):
     def __init__(self, id):

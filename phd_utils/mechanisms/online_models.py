@@ -114,7 +114,7 @@ class OnlineDASimulator():
                 for trader2 in self.traders:
                     trader2.updateLastOrder(trades, order)
             
-            print opt.blsPrice(), self.traders[0].proxyTradingModel.price, self.traders[0].proxyTradingModel.getAsk(), self.traders[0].proxyTradingModel.getBid()
+            print opt.blsPrice(), self.traders[0].proxyTradingModel.price, self.traders[0].proxyTradingModel.getAsk(), self.traders[0].proxyTradingModel.getBid(), self.traders[0].proxyTradingModel.cash, self.traders[0].proxyTradingModel.options
             
             
             plotDf.ix[i]['CDAOpen']=mechanism.getOpenPrice()
