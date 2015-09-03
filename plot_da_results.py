@@ -31,7 +31,7 @@ outputPath='plots/da_experiments/%s_Markets' % expName
 optionNames=['atm', 'otm', 'itm']
 sns.set_style("whitegrid")
 
-fig=plt.figure(figsize=(8,15))
+fig=plt.figure(figsize=(10,15))
 gs=mgridspec.GridSpec(6,1, height_ratios=[3,1,3,1,3,1])
 isShown=False
 i=0

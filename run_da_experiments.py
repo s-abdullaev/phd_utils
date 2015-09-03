@@ -256,14 +256,14 @@ exper=[]
 #                        linTime))
 #                        
 #PORTFOLIO HOLDING TRADERS
-exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders1", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedLmsrTraders1,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
+#exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders1", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedLmsrTraders1,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
 #
 #exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders2", 
 #                        assetPrices, 
@@ -274,59 +274,59 @@ exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders1",
 #                        linAssetPrices,
 #                        linTime))
 #
-exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders3", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedLmsrTraders3,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
-#
-exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders4", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedLmsrTraders4,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
+#exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders3", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedLmsrTraders3,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
+##
+#exper.append(DAExperiment("results/da_experiments/mixedLmsrTraders4", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedLmsrTraders4,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
 #MIXED TRADERS
-exper.append(DAExperiment("results/da_experiments/mixedRiskNeutralTraders1", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedRiskNeutralTraders1,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
-#
-exper.append(DAExperiment("results/da_experiments/mixedAllTraders1", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedTraders1,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
-                        
-exper.append(DAExperiment("results/da_experiments/mixedMoreRiskAverseTraders1", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedTraders2,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
+#exper.append(DAExperiment("results/da_experiments/mixedRiskNeutralTraders1", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedRiskNeutralTraders1,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
+##
+#exper.append(DAExperiment("results/da_experiments/mixedAllTraders1", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedTraders1,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
+#                        
+#exper.append(DAExperiment("results/da_experiments/mixedMoreRiskAverseTraders1", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedTraders2,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
 
 
 
-for da_exp in exper:
-    try:
-        da_exp.start()
-        #pass
-    except:
-        print "ERROR:", sys.exc_info()[0] 
+#for da_exp in exper:
+#    try:
+#        da_exp.start()
+#        #pass
+#    except:
+#        print "ERROR:", sys.exc_info()[0] 
 
 #assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
 #mechanisms
