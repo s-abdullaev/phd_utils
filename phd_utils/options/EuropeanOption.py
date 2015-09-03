@@ -9,6 +9,16 @@ import vollib.black_scholes.implied_volatility as iv
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.analytical as greeks
 
+def getImpVol(price, opt, prev_sigmas):
+    def optPrice(curVol):
+        return (price-bls.black_scholes('c', opt.S0, opt.K, opt.T, opt.r, curVol))**2
+    v=optim.fminbound(optPrice, 0,10,maxfun=500, disp=0)
+    prev_sigmas.append(v)
+    pSigmas=np.array(prev_sigmas)    
+    countNonZeros=len(pSigmas[pSigmas>0])
+    
+    return sum(prev_sigmas)/countNonZeros
+
 OPTION_PORTFOLIOS=pd.DataFrame({'Short Call':	[-1, 0, 0, 0, 0, 0],
                          'Long Call': [1, 0, 0, 0, 0, 0],
                          'Long Put': [0, 1, 0, 0, 0, 0],
