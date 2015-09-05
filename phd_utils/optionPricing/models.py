@@ -19,19 +19,23 @@ class ZIPricing(object):
         self.model=assetPricingModel
     
     def getPrices(self, opt, size):
+        isLongs=pd.Series(np.random.choice([-1,1], size), name='isLong')
         if opt.T==0: 
-            return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            oPrices= pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            return pd.concat([oPrices,isLongs], axis=1)
 
         days=int(np.floor(opt.T*365))
         prices=self.model.generate(opt.S0, size, days)
+        
         optPrices=prices.apply(lambda x: opt.payoff(x))
         optPrices.name='prices'
-        return optPrices
-#jd=assetPricing.BrownianPricing(100,0.02,0.1)
-#opt=eurOpt.CallOption(S0=100,K=100,r=0.02,sigma=0.01, T=1)
-#ziPricer=ZIPricing(jd, opt)
-#optPrices=ziPricer.getPrices(100)
-#optPrices.hist()
+
+        return pd.concat([optPrices,isLongs], axis=1)
+#jd=BrownianPricing(100,0.02,0.1)
+#opt=CallOption(S0=100,K=100,r=0.02,sigma=0.01, T=1)
+#ziPricer=ZIPricing(jd)
+#optPrices=ziPricer.getPrices(opt, 100)
+#optPrices.head()
 
 class BSPricing(object):
     def __init__(self, ret, sigma, sigma_eps):
@@ -40,9 +44,11 @@ class BSPricing(object):
         self.sigma_eps=sigma_eps
     
     def getPrices(self, opt, size):
+        isLongs=pd.Series(np.random.choice([-1,1], size), name='isLong')
         if opt.T==0: 
-            return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
-
+            optPrices=pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            return pd.concat([optPrices,isLongs], axis=1)
+        
         basePrices=[]
         for i in range(size):
             self.option=copy.deepcopy(opt)
@@ -50,7 +56,10 @@ class BSPricing(object):
             self.option.r=self.ret
             self.option.sigma=self.sigma+np.random.randn()*self.sigma_eps
             basePrices.append(self.option.blsPrice())
-        return pd.Series(basePrices, name='prices')
+            
+        optPrices=pd.Series(basePrices, name='prices')
+        
+        return pd.concat([optPrices,isLongs], axis=1)
 
 class MonteCarloPricing(object):
     def __init__(self, assetPricingModel, ntrials):
@@ -58,8 +67,10 @@ class MonteCarloPricing(object):
         self.ntrials=ntrials
     
     def getPrices(self, opt, size):
+        isLongs=pd.Series(np.random.choice([-1,1], size), name='isLong')
         if opt.T==0: 
-            return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            oPrices= pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            return pd.concat([oPrices,isLongs], axis=1)
 
         optPrices=[]
         for i in range(size):
@@ -68,7 +79,10 @@ class MonteCarloPricing(object):
             curOptPrices=curPrices.apply(lambda x: opt.payoff(x))
             
             optPrices.append(curOptPrices.mean())
-        return pd.Series(optPrices, name='prices')
+        
+        oPrices=pd.Series(optPrices, name='prices')
+        
+        return pd.concat([oPrices,isLongs], axis=1)
 #jd=assetPricing.BrownianPricing(100,0.02,0.1)
 #opt=eurOpt.CallOption(S0=100,K=100,r=0.02,sigma=0.01, T=1)
 #mcPricer=MonteCarloPricing(jd, opt, 100)
@@ -82,8 +96,10 @@ class DeltaHedgePricing(object):
         self.premium=premium if premium else self.option.blsPrice()
     
     def getPrices(self, opt, size):
+        isLongs=pd.Series(np.random.choice([-1,1], size), name='isLong')
         if opt.T==0: 
-            return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            oPrices= pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            return pd.concat([oPrices,isLongs], axis=1)
 
         dt=1/365
         days=int(np.floor(self.option.T*365))
@@ -111,8 +127,10 @@ class DeltaHedgePricing(object):
             self.option.__dict__.update(self.initOptParams)           
             curBank[-1]=curBank[-1]+curDelta[-1]*curPrices[-1]-[self.option.payoff(x) for x in curPrices[-1]]
             optPrices.append(self.premium-np.mean(curBank[-1]))
-            
-        return pd.Series(optPrices, name='prices')
+        
+        oPrices=pd.Series(optPrices, name='prices')
+       
+        return pd.concat([oPrices,isLongs], axis=1)
 #jd=assetPricing.BrownianPricing(100,0.02,0.1)
 #opt=eurOpt.CallOption(S0=100,K=100,r=0.02,sigma=0.01, T=1)
 #dhPricer=DeltaHedgePricing(jd, opt, 100,None)
@@ -125,8 +143,11 @@ class ExpPricing(object):
         self.riskAverse=riskAverse
     
     def getPrices(self, opt, size):
+        isLongs=pd.Series(np.random.choice([-1,1], size), name='isLong')
         if opt.T==0: 
-            return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            oPrices= pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            return pd.concat([oPrices,isLongs], axis=1)
+            
 
         days=opt.daysToMaturity()
         optPrices=[]
@@ -138,11 +159,13 @@ class ExpPricing(object):
         
         for i in range(size):
             curPrices=self.model.generate(opt.S0, 100, days)
-            curOptPrices=curPrices.apply(lambda x: opt.payoff(x))        
-            p=optim.zeros.newton(expectedUtil, opt.blsPrice())               
+            curOptPrices=curPrices.apply(lambda x: isLongs[i]*opt.payoff(x))        
+            p=optim.zeros.newton(expectedUtil, isLongs[i]*opt.blsPrice())               
             
-            optPrices.append(p)
-        return pd.Series(optPrices, name='prices')
+            optPrices.append(abs(p))
+            
+        oPrices=pd.Series(optPrices, name='prices')
+        return pd.concat([oPrices,isLongs], axis=1)
         
 #jd=assetPricing.BrownianPricing(100,0.02,0.1)
 #opt=eurOpt.CallOption(S0=100,K=100,r=0.02,sigma=0.01, T=1)
@@ -164,23 +187,28 @@ class LMSRPricing(object):
         return self.b * np.log(sum(np.exp(vals/self.b)))
 
     def getPrices(self, opt, size):
+        isLongs=pd.Series(np.random.choice([-1,1], size), name='isLong')
         if opt.T==0: 
-            return pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            oPrices= pd.Series([opt.payoff(opt.S0)]*size, name='prices')
+            return pd.concat([oPrices,isLongs], axis=1)
 
         days=opt.daysToMaturity()
         optPrices=[]        
         for i in range(size):
+            curOpt=copy.copy(opt)
             rangeOfEvents=self.model.generate(opt.S0, self.ntrials, days)
             rangeOfEvents=np.linspace(rangeOfEvents.min(),rangeOfEvents.max(), 20)
             
+            curOpt.isLong=True if isLongs[i]==1 else False
             tempPort=copy.deepcopy(self.portfolio)
-            tempPort.portfolio.append(opt)
+            tempPort.portfolio.append(curOpt)
             
             tempPayoffs=self.payoff(tempPort, rangeOfEvents)
             curPayoffs=self.payoff(self.portfolio, rangeOfEvents)        
             
-            optPrices.append(self.lmsr(tempPayoffs)-self.lmsr(curPayoffs))
-        return pd.Series(optPrices, name='prices')
+            optPrices.append(abs(self.lmsr(tempPayoffs)-self.lmsr(curPayoffs)))
+        oPrices=pd.Series(optPrices, name='prices')
+        return pd.concat([oPrices,isLongs], axis=1)
 
 #optATM=CallOption(S0=100,K=100,r=0.02,sigma=0.5, T=1, isLong=False)
 #optOTM=CallOption(S0=100,K=110,r=0.02,sigma=0.5, T=1)
