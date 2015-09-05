@@ -143,14 +143,14 @@ class OptionPortfolio(object):
         
         if port_qnties['OTM_call']:
             opt=copy.copy(atm_call)
-            opt.K-=eps
+            opt.K+=eps
             opt.isLong = True if port_qnties['OTM_call']>0 else False
             for o in [opt]*abs(port_qnties['OTM_call']):
                 self.portfolio.append(o)
                 
         if port_qnties['OTM_put']:
             opt=copy.copy(atm_put)
-            opt.K+=eps
+            opt.K-=eps
             opt.isLong = True if port_qnties['OTM_put']>0 else False
             for o in [opt]*abs(port_qnties['OTM_put']):
                 self.portfolio.append(o)

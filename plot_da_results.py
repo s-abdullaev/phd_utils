@@ -24,7 +24,7 @@ import seaborn as sns
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
-expName='mixedLmsrTraders2'
+expName='mixedLmsrTraders4'
 plotFolder='results/da_experiments/%s/' % expName
 outputPath='plots/da_experiments/%s_Markets' % expName
 
@@ -42,11 +42,11 @@ for oName in optionNames:
     blsPrices, =ax1.plot(marketDf.index, marketDf['BLSPrice'], color='blue', label='Black-Scholes Price')
     daPrices, =ax1.plot(marketDf.index, marketDf['DAPrice'], color='red', label='DA Price')
     ax1.fill_between(marketDf.index,  marketDf['accepted_ask_min'], marketDf['accepted_bid_max'], facecolor='yellow', alpha=0.4)
-#    ax1.fill_between(marketDf.index,  marketDf['rejected_ask_min'], marketDf['rejected_ask_max'], facecolor='yellow', alpha=0.4)
+    ax1.fill_between(marketDf.index,  marketDf['rejected_bid_max'], marketDf['rejected_ask_min'], facecolor='orange', alpha=0.6)
 #    ax1.fill_between(marketDf.index,  marketDf['rejected_bid_min'], marketDf['rejected_bid_max'], facecolor='yellow', alpha=0.4)
     
     acceptedOrders=mpatches.Patch(color='yellow', label='Accepted Orders')
-#    rejectedOrders=mpatches.Patch(color='yellow', label='Rejected Orders')
+    rejectedOrders=mpatches.Patch(color='orange', label='Bid-Ask Spread')
     volumePatch=mpatches.Patch(color='gray', label='Traded Volume')
     effErrPatch=mpatches.Patch(color='b', label='Rejected Efficient Trades')
     
@@ -57,7 +57,7 @@ for oName in optionNames:
     ax1.set_title(oName.upper() +' Option Prices until Expiration Date', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Option Prices', fontsize=14, fontweight='bold')
     if not isShown:
-        ax1.legend(loc='upper right', frameon=True, framealpha=0.7,  fontsize=12, handles=[blsPrices, daPrices, acceptedOrders])
+        ax1.legend(loc='upper right', frameon=True, framealpha=0.7,  fontsize=12, handles=[blsPrices, daPrices, acceptedOrders, rejectedOrders])
     i+=1
 
     ax2=plt.subplot(gs[i])

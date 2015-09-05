@@ -43,8 +43,8 @@ r_arrRate=4
 r_muLambda=0.1
 r_sigmaLambda=0.2
 
-risk_aversion=0.1
-lmsr_liquidity=2500
+risk_aversion=0.03
+lmsr_liquidity=100
 
 ntrials=100
 
@@ -123,6 +123,8 @@ linModel=LinearQuantity(equib_quant)
 constModel=LinearQuantity(qnty_const)
 
 #traders
+zi_rnd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=ziOptPricer)
+
 exp_rnd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=expOptPricer)
 mon_rnd_brwn_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer)
 mon_rnd_jd_trader=DATrader(QuantityModel=rndModel, AssetPricingModel=jumpDiffMdl, OptionPricingModel=monJdOptPricer)
@@ -164,9 +166,9 @@ mixedRiskNeutralTraders2=DATraderCollection([mon_rnd_brwn_trader, mon_rnd_jd_tra
 mixedRiskNeutralLinTraders1=DATraderCollection([mon_rnd_brwn_trader, mon_lin_jd_trader, bs_rnd_trader], [0.3,0.3,0.4])
 mixedRiskNeutralLinTraders2=DATraderCollection([mon_rnd_brwn_trader, mon_lin_jd_trader, bs_rnd_trader], [0.2,0.6,0.2])
 
-mixedTraders1=DATraderCollection([exp_rnd_trader, bs_rnd_trader], [0.8,0.2])
-mixedTraders2=DATraderCollection([exp_rnd_trader, mon_rnd_jd_trader, bs_rnd_trader], [0.6,0.2,0.2])
-mixedTraders3=DATraderCollection([exp_rnd_trader, mon_rnd_jd_trader], [0.8, 0.2])
+mixedTraders1=DATraderCollection([exp_rnd_trader, zi_rnd_trader], [0.8,0.2])
+mixedTraders2=DATraderCollection([exp_rnd_trader, zi_rnd_trader, bs_rnd_trader], [0.4,0.4,0.2])
+
 mixedAllTraders=DATraderCollection([mon_rnd_brwn_trader,
                                     mon_rnd_jd_trader,
                                     mon_lin_brwn_trader,
@@ -210,15 +212,15 @@ exper.append(DAExperiment("results/da_experiments/mixedTraders2",
                         numTraders, 
                         linAssetPrices,
                         linTime))
-
-exper.append(DAExperiment("results/da_experiments/mixedTraders3", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedTraders3,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
+#
+#exper.append(DAExperiment("results/da_experiments/mixedTraders3", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedTraders3,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
 #RISK NEUTRAL TRADERS
 #exper.append(DAExperiment("results/da_experiments/mon_rnd_brwn", 
 #                        assetPrices, 
@@ -337,8 +339,7 @@ exper.append(DAExperiment("results/da_experiments/mixedAllTraders",
                         [call_atm, call_otm, call_itm], 
                         numTraders, 
                         linAssetPrices,
-                        linTime))                        
-                        
+                        linTime))
                         
 #exper.append(DAExperiment("results/da_experiments/mixedRiskNeutralTraders1", 
 #                        assetPrices, 
@@ -379,9 +380,9 @@ for da_exp in exper:
 #assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
 #mechanisms
 #
-#da=DirectDASimulator('test', assetPrices, interestRates, mixedLmsrTraders1, call_atm, numTraders)
+#da=DirectDASimulator('test', assetPrices, interestRates, mixedLmsrTraders4, call_atm, numTraders)
 #plotDf=da.simulate()
-#plotDf.plot(y=['BLSPrice', 'DAPrice'])
+#plotDf.plot(y=['BLSPrice', 'rejected_bid_max','rejected_ask_min'])
 #plotDf.to_excel('results/da_experiments/lmsr_degen/mixedLmsrTraders1_Market.xls')
 
 #plotDf=da.simulateVolCurve(linAssetPrices)

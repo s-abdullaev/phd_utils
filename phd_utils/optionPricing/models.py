@@ -154,13 +154,13 @@ class ExpPricing(object):
         def u(x):
             return (1-np.exp(-self.riskAverse*x))/self.riskAverse
         
-        def expectedUtil(price):
-            return np.mean(u(np.exp(opt.r*opt.T)*price-curOptPrices))
-        
         for i in range(size):
+            def expectedUtil(price):
+                return np.mean(u(curOptPrices-np.exp(opt.r*opt.T)*price))
+            
             curPrices=self.model.generate(opt.S0, 100, days)
             curOptPrices=curPrices.apply(lambda x: isLongs[i]*opt.payoff(x))        
-            p=optim.zeros.newton(expectedUtil, isLongs[i]*opt.blsPrice())               
+            p=optim.zeros.newton(expectedUtil, isLongs[i]*opt.blsPrice())
             
             optPrices.append(abs(p))
             
@@ -193,20 +193,28 @@ class LMSRPricing(object):
             return pd.concat([oPrices,isLongs], axis=1)
 
         days=opt.daysToMaturity()
-        optPrices=[]        
+        optPrices=[]
+                
         for i in range(size):
             curOpt=copy.copy(opt)
-            rangeOfEvents=self.model.generate(opt.S0, self.ntrials, days)
-            rangeOfEvents=np.linspace(rangeOfEvents.min(),rangeOfEvents.max(), 20)
+#            rangeOfEvents=self.model.generate(opt.S0, self.ntrials, days)
+            rangeOfEvents=np.linspace(opt.S0-40,opt.S0+40, 20)
             
-            curOpt.isLong=True if isLongs[i]==1 else False
+            curOpt.isLong=False if isLongs[i]==1 else True
             tempPort=copy.deepcopy(self.portfolio)
             tempPort.portfolio.append(curOpt)
             
             tempPayoffs=self.payoff(tempPort, rangeOfEvents)
-            curPayoffs=self.payoff(self.portfolio, rangeOfEvents)        
+            #print tempPayoffs
             
-            optPrices.append(abs(self.lmsr(tempPayoffs)-self.lmsr(curPayoffs)))
+            curPayoffs=self.payoff(self.portfolio, rangeOfEvents)
+            #print curPayoffs
+            def util(price):
+                return self.lmsr(tempPayoffs-isLongs[i]*price)-self.lmsr(curPayoffs)
+            p=optim.newton(util, curOpt.blsPrice())
+            
+            #print tempPayoffs-isLongs[i]*p
+            optPrices.append(abs(p))
         oPrices=pd.Series(optPrices, name='prices')
         return pd.concat([oPrices,isLongs], axis=1)
 

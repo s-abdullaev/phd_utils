@@ -20,7 +20,7 @@ class RandomQuantity(object):
     
     def getQuantities(self, optionPrices, opt):
         size=len(optionPrices)
-        optionPrices['quantities']=optionPrices['isLong']*np.random.randint(self.qntyRange[0], self.qntyRange[1], size)
+        optionPrices['quantities']=optionPrices['isLong']*np.random.randint(0, self.qntyRange[1], size)
         return optionPrices
 
 class LinearQuantity(object):
@@ -43,7 +43,7 @@ class LinearQuantity(object):
             
             return -np.round(val)
         
-        optionPrices['quantities']=[demFunc(row['prices']) if row['isLong']==1 else supFunc(row['prices']) for row in optionPrices.iterrows()]
+        optionPrices['quantities']=[demFunc(row['prices']) if row['isLong']==1 else supFunc(row['prices']) for i, row in optionPrices.iterrows()]
         return optionPrices
 
 class OptionPortfolioQuantity(object):
