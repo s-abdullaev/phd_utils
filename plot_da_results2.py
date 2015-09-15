@@ -26,7 +26,7 @@ import seaborn as sns
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
-expName='mixedTraders2'
+expName='vol_rnd_vasicek'
 plotFolder='results/da_experiments/%s/' % expName
 outputPath='plots/da_experiments/%s_Greeks' % expName
 

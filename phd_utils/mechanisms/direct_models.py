@@ -163,7 +163,7 @@ class DirectDASimulator(object):
         for i, t, p, r in zip(range(opt.daysToMaturity()), steps, self.assetPrices.values, self.interestRates.values):
             opt.T=t
             opt.S0=p    
-            opt.r=r
+            opt.r=r/100.0
             
             orders=self.traders.getOrders(opt, self.numOrders)
             orders=mechanism.clearOrders(orders)

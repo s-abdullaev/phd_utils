@@ -30,7 +30,7 @@ class CDATrader(object):
         opt=copy.copy(optionType)
         self.orders=pd.DataFrame(self.optPricingModel.getPrices(opt, 1))        
         self.orders=self.quantityModel.getQuantities(self.orders, opt)
-        self.orders.columns=['price', 'quantity']
+        self.orders.columns=['price', 'quantity', 'isLong']
         self.proxyTradingModel.updateOptionPrice(self.orders['price'][0])
         
     def updateLastOrder(self, trades, lastOrder):

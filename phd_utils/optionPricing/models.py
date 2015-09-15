@@ -53,7 +53,6 @@ class BSPricing(object):
         for i in range(size):
             self.option=copy.deepcopy(opt)
             self.option.S0=opt.S0
-            self.option.r=self.ret
             self.option.sigma=self.sigma+np.random.randn()*self.sigma_eps
             basePrices.append(self.option.blsPrice())
             
