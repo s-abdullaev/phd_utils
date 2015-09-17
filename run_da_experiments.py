@@ -13,6 +13,7 @@ from phd_utils.assetPricing.models import *
 from phd_utils.optionPricing.models import *
 from phd_utils.optionPricing.qntyModels import *
 from phd_utils.mechanisms.direct_models import *
+from phd_utils.mechanisms.online_models import *
 from phd_utils.mechanisms.experiment import *
 from phd_utils.tradingAlgos.DATrader import *
 import scipy.optimize as optim

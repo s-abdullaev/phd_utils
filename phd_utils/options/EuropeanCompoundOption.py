@@ -17,14 +17,16 @@ import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.analytical as greeks
 
 def critical(s, k1, k2, r, T, vol, callput):
-    return optim.fminbound(corp1, 0.00001, 5*s, args=(k1, k2, r, T, vol, callput))
+    return optim.fsolve(corp1, s, args=(k1, k2, r, T, vol, callput))[0]
 
 def corp1(ss, k1, k2, r, T, vol, callput):
     return k1-bls.black_scholes(callput, ss, k2, T, r, vol)
 
+
 def cbnd(a,b,p):
     aa=[0.3253030, 0.4211071, 0.1334425, 0.006374323]    
     bb=[0.1337764, 0.6243247, 1.3425378, 2.2626645]
+    sm=0
     if a<=0 and b<=0 and p<=0:
         inva=a/np.sqrt(2*(1-p**2))
         invb=b/np.sqrt(2*(1-p**2))
@@ -54,7 +56,6 @@ def euroCompound(s, k1, k2, r, T1, T2, vol, cp):
     sstar=critical(s, k1, k2, r, T2-T1, vol, callput)
     a1=(np.log(s/sstar)+(r+0.5*vol**2)*T1)/(vol*np.sqrt(T1))
     a2=a1-vol*np.sqrt(T1)
-    a2=a1-vol*sqrt(T1);
     b1=(np.log(s/k2)+(r+0.5*vol**2)*T2)/(vol*np.sqrt(T2))
     b2=b1-vol*np.sqrt(T2)
     Tratio=np.sqrt(T1/T2)
@@ -66,3 +67,4 @@ def euroCompound(s, k1, k2, r, T1, T2, vol, cp):
         return k2*np.exp(-r*T2)*cbnd(-a2,-b2,Tratio)-np.exp(-r*T1)*k1*stats.norm.cdf(-a2)-s*cbnd(-a1,-b1,Tratio)
     elif cp==3:
         return k2*np.exp(-r*T2)*cbnd(-a2,b2,-Tratio)+np.exp(-r*T1)*k1*stats.norm.cdf(-a2)-s*cbnd(-a1,b1,-Tratio)
+        

@@ -86,17 +86,23 @@ class OnlineDASimulator():
     def simulate(self):
         opt=copy.copy(self.option)
         mechanism=self.mechanism
+        traderCols=pd.MultiIndex.from_product([[tr.id for tr in self.traders], ['pHat', 'bid', 'ask', 'payoff', 'cash', 'options']], names=['trader_ids', 'trader_props'])
+        
         cols=['CDAOpen', 'CDAHigh', 'CDALow', 'CDAClose', 'BLSPrice', 'Volume', 'AssetPrice', 'InterestRate']
         
-        plotDf=pd.DataFrame(np.zeros([opt.daysToMaturity(), 8]), columns=cols)
-        plotDf['AssetPrice']=self.assetPrices.values
-        plotDf['InterestRate']=self.interestRates.values
+        lastDay=opt.daysToMaturity()-1        
+        
+        
+        tradersDf=pd.DataFrame(np.zeros([lastDay, len(self.traders)*6]), columns=traderCols)
+        plotDf=pd.DataFrame(np.zeros([lastDay, 8]), columns=cols)
+        plotDf['AssetPrice']=self.assetPrices.values[:-1]
+        plotDf['InterestRate']=self.interestRates.values[:-1]
         
         for trader1 in self.traders:
             trader1.proxyTradingModel.ob=mechanism.ob
         
-        steps=np.linspace(opt.T, 0, opt.daysToMaturity())
-        for i, t, p, r in zip(range(opt.daysToMaturity()), steps, self.assetPrices.values, self.interestRates.values):
+        steps=np.linspace(opt.T, 0, lastDay)
+        for i, t, p, r in zip(range(lastDay), steps, self.assetPrices.values[:-1], self.interestRates.values[:-1]):
             opt.T=t
             opt.S0=p    
             opt.r=r
@@ -114,9 +120,17 @@ class OnlineDASimulator():
                 for trader2 in self.traders:
                     trader2.updateLastOrder(trades, order)
             
-            print opt.blsPrice(), self.traders[0].proxyTradingModel.price, self.traders[0].proxyTradingModel.getAsk(), self.traders[0].proxyTradingModel.getBid(), self.traders[0].proxyTradingModel.cash, self.traders[0].proxyTradingModel.options
+            for tr in self.traders:
+                tradersDf.ix[i][tr.id]['pHat']=tr.proxyTradingModel.price
+                tradersDf.ix[i][tr.id]['bid']=tr.proxyTradingModel.curBid
+                tradersDf.ix[i][tr.id]['ask']=tr.proxyTradingModel.curAsk
+                tradersDf.ix[i][tr.id]['payoff']=tr.proxyTradingModel.utility
+                tradersDf.ix[i][tr.id]['cash']=tr.proxyTradingModel.cash
+                tradersDf.ix[i][tr.id]['options']=tr.proxyTradingModel.options
             
-            
+            for h in range(10):
+                print opt.blsPrice(), self.traders[h].proxyTradingModel.price, self.traders[h].proxyTradingModel.getAsk(), self.traders[h].proxyTradingModel.getBid(), self.traders[h].proxyTradingModel.cash, self.traders[h].proxyTradingModel.options
+                        
             plotDf.ix[i]['CDAOpen']=mechanism.getOpenPrice()
             plotDf.ix[i]['CDAHigh']=mechanism.getHighPrice()
             plotDf.ix[i]['CDALow']=mechanism.getLowPrice()
@@ -126,4 +140,9 @@ class OnlineDASimulator():
             
             mechanism.nextDay()
             print i
-        return plotDf
+            
+        traderResults=[[tr.id, (tr.proxyTradingModel.cash-tradersDf.ix[0][tr.id]['cash'])+float(tr.proxyTradingModel.options)*float(opt.payoff(opt.S0)), tr.proxyTradingModel.options] for tr in self.traders]
+        traderResultsDf=pd.DataFrame(traderResults, columns=['trader_id', 'trader_cash', 'trader_options'])    
+            
+        
+        return plotDf, tradersDf, traderResultsDf

@@ -15,6 +15,7 @@ from phd_utils.assetPricing.models import *
 from phd_utils.optionPricing.models import *
 from phd_utils.optionPricing.qntyModels import *
 from phd_utils.mechanisms.direct_models import *
+from phd_utils.mechanisms.online_models import *
 from phd_utils.tradingAlgos.DATrader import *
 import scipy.optimize as optim
 import scipy.stats as stats
@@ -22,7 +23,6 @@ import matplotlib.pyplot as plt
 import os
 
 class DAExperiment(object):
-    
     def __init__(self, folder, assetPrices, interestRates, traders, options, numTraders, linAssets, linTime):
         if not os.path.exists(folder):
             os.makedirs(folder)
@@ -81,3 +81,37 @@ class DAExperiment(object):
         df=da.simulateVolCurve(self.linAssets)
         df.to_excel("%s/%s_%s.xls" % (self.folder, name_prefix, "VolCurve"))
         #plotDf.plot(x='Strikes', y='ImpVol')
+
+class CDAExperiment(object):
+    def __init__(self, folder, assetPrices, interestRates, traders, options):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+            
+        self.folder=folder
+        self.assetPrices=assetPrices
+        self.interestRates=interestRates
+        self.traders=traders
+        self.atm_opt=copy.copy(options[0])
+        self.otm_opt=copy.copy(options[1])
+        self.itm_opt=copy.copy(options[2])
+        
+        
+    def start(self):
+        print "%s - STARTING!!!" % self.folder
+        print "%s - STARTING FOR ATM" % self.folder
+        self.run(self.atm_opt, "atm")
+        for tr in self.traders: tr.proxyTradingModel.reset()
+        print "%s - STARTING FOR OTM" % self.folder        
+        self.run(self.otm_opt, "otm")
+        for tr in self.traders: tr.proxyTradingModel.reset()
+        print "%s - STARTING FOR ITM" % self.folder
+        self.run(self.itm_opt, "itm")
+        print "%s - FINISHED" % self.folder
+    
+    def run(self, opt, name_prefix):
+        cda=OnlineDASimulator(name_prefix, self.assetPrices, self.interestRates, self.traders, opt)
+        
+        df, traderBidsDf, traderResultsDf=cda.simulate()
+        df.to_excel("%s/%s_%s.xls" % (self.folder, name_prefix, "Market"))
+        traderBidsDf.to_pickle("%s/%s_%s.xls" % (self.folder, name_prefix, "TraderOrders"))
+        traderResultsDf.to_excel("%s/%s_%s.xls" % (self.folder, name_prefix, "TraderResults"))
