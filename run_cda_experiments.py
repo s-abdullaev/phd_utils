@@ -136,7 +136,7 @@ bsTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, Optio
 zipTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(1,100)]
 
 #all gd
-gdTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo(i)) for i in range(1,100)]
+gdTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo(i)) for i in range(1,10)]
 
 #zip+gd
 zipGdTrader=[]
@@ -156,11 +156,11 @@ copTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMd
 #gar+zip
 garTraders=[]
 garTraders.append(CDATrader(1, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(1,1000,100)))
-garTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(2,5000,100)))
-garTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(3,10000,100)))
-garTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(4,1000,1000)))
-garTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(5,5000,1000)))
-garTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(6,10000,1000)))
+garTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(2,5000,1000)))
+garTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(3,10000,1000)))
+garTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(4,1000,5000)))
+garTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(5,5000,5000)))
+garTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(6,10000,5000)))
 garTraders.append(CDATrader(7, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(7,1000,10000)))
 garTraders.append(CDATrader(8, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(8,5000,10000)))
 garTraders.append(CDATrader(9, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(9,10000,10000)))
@@ -185,7 +185,7 @@ mixedTraders.append(CDATrader(14, QuantityModel=rndModel, AssetPricingModel=brwn
 mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(15,70)])
 mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo(i)) for i in range(71,100)])
 
-#cda=OnlineDASimulator('test', assetPrices, interestRates, bsTraders, call_otm)
+#cda=OnlineDASimulator('test', assetPrices, interestRates, zipTraders, call_otm)
 #
 #df, traderDf, traderResultsDf=cda.simulate()
 #df[:-1].plot(y=['BLSPrice', 'CDAHigh'])
@@ -194,56 +194,56 @@ mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwn
 exper=[]
 
 #BS TRADERS
-#exper.append(CDAExperiment("results/cda_experiments/bsTraders", 
-#                        assetPrices, 
-#                        interestRates, 
-#                        bsTraders,
-#                        [call_atm, call_otm, call_itm]))
-
-#ZIP TRADERS
 exper.append(CDAExperiment("results/cda_experiments/bsTraders", 
                         assetPrices, 
                         interestRates, 
-                        zipTraders,
+                        bsTraders,
                         [call_atm, call_otm, call_itm]))
 
-#GD TRADERS
-exper.append(CDAExperiment("results/cda_experiments/zipTraders", 
-                        assetPrices, 
-                        interestRates, 
-                        gdTraders,
-                        [call_atm, call_otm, call_itm]))
-
-#ZIP GD TRADERS
-exper.append(CDAExperiment("results/cda_experiments/zipGdTraders", 
-                        assetPrices, 
-                        interestRates, 
-                        zipGdTraders,
-                        [call_atm, call_otm, call_itm]))
-
-#COP TRADERS
-exper.append(CDAExperiment("results/cda_experiments/copTraders", 
-                        assetPrices, 
-                        interestRates, 
-                        copTraders,
-                        [call_atm, call_otm, call_itm]))
-#GAR TRADERS
-exper.append(CDAExperiment("results/cda_experiments/garTraders", 
+#ZIP TRADERS
+#exper.append(CDAExperiment("results/cda_experiments/zipTraders", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        zipTraders,
+#                        [call_atm, call_otm, call_itm]))
+#
+##GD TRADERS
+#exper.append(CDAExperiment("results/cda_experiments/gdTraders", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        gdTraders,
+#                        [call_atm, call_otm, call_itm]))
+#
+##ZIP GD TRADERS
+#exper.append(CDAExperiment("results/cda_experiments/zipGdTraders", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        zipGdTrader,
+#                        [call_atm, call_otm, call_itm]))
+#
+##COP TRADERS
+#exper.append(CDAExperiment("results/cda_experiments/copTraders", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        copTraders,
+#                        [call_atm, call_otm, call_itm]))
+##GAR TRADERS
+exper.append(CDAExperiment("results/cda_experiments/garTraders1", 
                         assetPrices, 
                         interestRates, 
                         garTraders,
                         [call_atm, call_otm, call_itm]))
 
 #MIXED TRADERS                        
-exper.append(CDAExperiment("results/cda_experiments/mixedTraders", 
-                        assetPrices, 
-                        interestRates, 
-                        mixedTraders,
-                        [call_atm, call_otm, call_itm]))
+#exper.append(CDAExperiment("results/cda_experiments/mixedTraders", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        mixedTraders,
+#                        [call_atm, call_otm, call_itm]))
 
 for da_exp in exper:
-    try:
-        da_exp.start()
+#    try:
+    da_exp.start()
         #pass
-    except:
-        print "ERROR:", sys.exc_info()[0] 
+#    except:
+#        print "ERROR:", sys.exc_info()[0] 
