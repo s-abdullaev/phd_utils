@@ -24,7 +24,7 @@ import seaborn as sns
 import vollib.black_scholes as bls
 import vollib.black_scholes.greeks.numerical as greeks
 
-expName='garTraders1'
+expName='garTraders'
 plotFolder='results/cda_experiments/%s/' % expName
 outputPath='plots/cda_experiments/%s_Markets' % expName
 

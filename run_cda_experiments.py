@@ -133,7 +133,17 @@ interestRates=pd.Series(np.ones(call_atm.daysToMaturity())*r, name='InterestRate
 bsTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=BSProxyAlgo(i)) for i in range(1,100)]
 
 #all zip
-zipTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(1,100)]
+zipTraders=[]
+zipTraders.append(CDATrader(1, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(1, beta=0.1, gamma=0.1)))
+zipTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(2, beta=0.5, gamma=0.1)))
+zipTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(3, beta=0.9, gamma=0.1)))
+zipTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(4, beta=0.1, gamma=0.5)))
+zipTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(5, beta=0.5, gamma=0.5)))
+zipTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(6, beta=0.9, gamma=0.5)))
+zipTraders.append(CDATrader(7, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(7, beta=0.1, gamma=0.9)))
+zipTraders.append(CDATrader(8, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(8, beta=0.5, gamma=0.9)))
+zipTraders.append(CDATrader(9, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(9, beta=0.9, gamma=0.9)))
+zipTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(10,100)])
 
 #all gd
 gdTraders=[CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo(i)) for i in range(1,10)]
@@ -156,33 +166,27 @@ copTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMd
 #gar+zip
 garTraders=[]
 garTraders.append(CDATrader(1, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(1,1000,100)))
-garTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(2,5000,1000)))
-garTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(3,10000,1000)))
-garTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(4,1000,5000)))
-garTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(5,5000,5000)))
-garTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(6,10000,5000)))
-garTraders.append(CDATrader(7, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(7,1000,10000)))
-garTraders.append(CDATrader(8, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(8,5000,10000)))
-garTraders.append(CDATrader(9, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(9,10000,10000)))
-garTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(10,100)])
+garTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(2,500000,10000)))
+garTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(3,1000000,10000)))
+garTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(4,500000,50000)))
+garTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(5,1000000,100000)))
+garTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(6,1000000,1000000)))
+garTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(7,100)])
 
 #mixed
 mixedTraders=[]
 mixedTraders.append(CDATrader(1, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(1,1000,100)))
-mixedTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(2,5000,1000)))
-mixedTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(3,10000,1000)))
-mixedTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(4,1000,5000)))
-mixedTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(5,5000,5000)))
-mixedTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(6,10000,5000)))
-mixedTraders.append(CDATrader(7, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(7,1000,10000)))
-mixedTraders.append(CDATrader(8, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(8,5000,10000)))
-mixedTraders.append(CDATrader(9, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(9,10000,10000)))
-mixedTraders.append(CDATrader(10, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(10,0.01)))
-mixedTraders.append(CDATrader(11, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(11,0.05)))
-mixedTraders.append(CDATrader(12, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(12,0.1)))
-mixedTraders.append(CDATrader(13, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(13,0.5)))
-mixedTraders.append(CDATrader(14, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(14,0.8)))
-mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(15,70)])
+mixedTraders.append(CDATrader(2, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(2,500000,10000)))
+mixedTraders.append(CDATrader(3, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(3,1000000,10000)))
+mixedTraders.append(CDATrader(4, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(4,500000,50000)))
+mixedTraders.append(CDATrader(5, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(5,1000000,100000)))
+mixedTraders.append(CDATrader(6, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=GarmanProxyAlgo(6,1000000,1000000)))
+mixedTraders.append(CDATrader(10, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(7,0.01)))
+mixedTraders.append(CDATrader(11, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(8,0.05)))
+mixedTraders.append(CDATrader(12, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(9,0.1)))
+mixedTraders.append(CDATrader(13, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(10,0.5)))
+mixedTraders.append(CDATrader(14, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=bsOptPricer, ProxyTradingModel=CopelandProxyAlgo(11,0.8)))
+mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=ZIPProxyAlgo(i)) for i in range(12,70)])
 mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwnMdl, OptionPricingModel=monOptPricer, ProxyTradingModel=GDProxyAlgo(i)) for i in range(71,100)])
 
 #cda=OnlineDASimulator('test', assetPrices, interestRates, zipTraders, call_otm)
@@ -194,14 +198,14 @@ mixedTraders.extend([CDATrader(i, QuantityModel=rndModel, AssetPricingModel=brwn
 exper=[]
 
 #BS TRADERS
-exper.append(CDAExperiment("results/cda_experiments/bsTraders", 
-                        assetPrices, 
-                        interestRates, 
-                        bsTraders,
-                        [call_atm, call_otm, call_itm]))
+#exper.append(CDAExperiment("results/cda_experiments/bsTraders", 
+#                        assetPrices, 
+#                        interestRates, 
+#                        bsTraders,
+#                        [call_atm, call_otm, call_itm]))
 
 #ZIP TRADERS
-#exper.append(CDAExperiment("results/cda_experiments/zipTraders", 
+#exper.append(CDAExperiment("results/cda_experiments/zipTraders1", 
 #                        assetPrices, 
 #                        interestRates, 
 #                        zipTraders,
@@ -228,7 +232,7 @@ exper.append(CDAExperiment("results/cda_experiments/bsTraders",
 #                        copTraders,
 #                        [call_atm, call_otm, call_itm]))
 ##GAR TRADERS
-exper.append(CDAExperiment("results/cda_experiments/garTraders1", 
+exper.append(CDAExperiment("results/cda_experiments/garTraders2", 
                         assetPrices, 
                         interestRates, 
                         garTraders,

@@ -37,6 +37,34 @@ class DirectDA(object):
         
         return orders
     
+    #single-unit mcafee rule        
+    def getSPrice(self, orders):
+        offbids=orders[(orders.accepted == 0) & (orders.quantity > 0)]
+        offasks=orders[(orders.accepted == 0) & (orders.quantity < 0)]
+        
+        #can also use idxmax
+        #offbids.ix[offbids.idxmax()['b']]['b']
+        if len(offbids)>0:
+            max_off_bid=offbids.ix[offbids.price.argmax()]['price']
+            if max_off_bid<=0:
+                max_off_bid=orders[(orders.accepted > 0) & (orders.quantity > 0)]['price'].min()
+        else:
+            max_off_bid=orders[(orders.accepted > 0) & (orders.quantity > 0)]['price'].min()
+            
+        if len(offasks)>0:
+            min_off_ask=offasks.ix[offasks.price.argmin()]['price']
+            if min_off_ask<=0:
+                min_off_ask=orders[(orders.accepted > 0) & (orders.quantity < 0)]['price'].max()
+        else:
+            min_off_ask=orders[(orders.accepted > 0) & (orders.quantity < 0)]['price'].max()
+        
+        p=0.5*(max_off_bid+min_off_ask)
+        
+        if np.isnan(p):
+            p=np.mean(orders.price)
+        
+        return p    
+    
     #multi-unit mcafee rule        
     def getPrice(self, orders):
         offbids=orders[(orders.accepted == 0) & (orders.quantity > 0)]

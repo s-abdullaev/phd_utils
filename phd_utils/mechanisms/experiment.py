@@ -100,13 +100,13 @@ class CDAExperiment(object):
         print "%s - STARTING!!!" % self.folder
         print "%s - STARTING FOR ATM" % self.folder
         self.run(self.atm_opt, "atm")
-#        for tr in self.traders: tr.proxyTradingModel.reset()
-#        print "%s - STARTING FOR OTM" % self.folder        
-#        self.run(self.otm_opt, "otm")
-#        for tr in self.traders: tr.proxyTradingModel.reset()
-#        print "%s - STARTING FOR ITM" % self.folder
-#        self.run(self.itm_opt, "itm")
-#        print "%s - FINISHED" % self.folder
+        for tr in self.traders: tr.proxyTradingModel.reset()
+        print "%s - STARTING FOR OTM" % self.folder        
+        self.run(self.otm_opt, "otm")
+        for tr in self.traders: tr.proxyTradingModel.reset()
+        print "%s - STARTING FOR ITM" % self.folder
+        self.run(self.itm_opt, "itm")
+        print "%s - FINISHED" % self.folder
     
     def run(self, opt, name_prefix):
         cda=OnlineDASimulator(name_prefix, self.assetPrices, self.interestRates, self.traders, opt)

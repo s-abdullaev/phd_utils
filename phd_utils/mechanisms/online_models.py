@@ -141,7 +141,7 @@ class OnlineDASimulator():
             mechanism.nextDay()
             print i
             
-        traderResults=[[tr.id, (tr.proxyTradingModel.cash-tradersDf.ix[0][tr.id]['cash'])+float(tr.proxyTradingModel.options)*float(opt.payoff(opt.S0)), tr.proxyTradingModel.options] for tr in self.traders]
+        traderResults=[[tr.id, (tr.proxyTradingModel.cash-tradersDf.ix[0][tr.id]['cash'])+float(tr.proxyTradingModel.options-tradersDf.ix[0][tr.id]['options'])*float(opt.payoff(opt.S0)), tr.proxyTradingModel.options-tradersDf.ix[0][tr.id]['option']] for tr in self.traders]
         traderResultsDf=pd.DataFrame(traderResults, columns=['trader_id', 'trader_cash', 'trader_options'])    
             
         

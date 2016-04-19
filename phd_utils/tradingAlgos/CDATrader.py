@@ -425,7 +425,7 @@ class GDProxyAlgo(object):
         return self.curAsk
         
 class ZIPProxyAlgo(object):
-    def __init__(self, id):
+    def __init__(self, id, beta=0, gamma=0):
         self.cash=0.0
         self.options=0
         self.utility=0.0
@@ -437,8 +437,8 @@ class ZIPProxyAlgo(object):
         self.curAskMargin=np.random.uniform(0.1, 0.5)
         self.curBidGamma=0
         self.curAskGamma=0
-        self.beta=np.random.uniform(0.1,0.5) ## learning coef
-        self.gamma=np.random.uniform(0.0,1.0) ## momentum on trend
+        self.beta=np.random.uniform(0.1,0.5) if not beta else beta ## learning coef
+        self.gamma=np.random.uniform(0.0,1.0) if not gamma else gamma ## momentum on trend
     
     def reset(self):
         self.cash=0.0

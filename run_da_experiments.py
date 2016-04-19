@@ -120,6 +120,7 @@ lmsr_bearPricer2=LMSRPricing(brwnMdl, ntrials, lmsr_liquidity, port_bearish2)
 
 #quantity models
 rndModel=RandomQuantity(qnty_random)
+rndSingModel=RandomSingularQuantity()
 linModel=LinearQuantity(equib_quant)
 constModel=LinearQuantity(qnty_const)
 
@@ -274,23 +275,23 @@ exper=[]
 #                        linAssetPrices,
 #                        linTime))
 #
-exper.append(DAExperiment("results/da_experiments/vol_rnd_vasicek", 
-                        assetPrices, 
-                        vasicekRates, 
-                        bs_rnd_trader,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
-
-exper.append(DAExperiment("results/da_experiments/vol_rnd_vasicekJump", 
-                        assetPrices, 
-                        vasicekJumpRates, 
-                        bs_rnd_trader,
-                        [call_atm, call_otm, call_itm], 
-                        numTraders, 
-                        linAssetPrices,
-                        linTime))
+#exper.append(DAExperiment("results/da_experiments/vol_rnd_vasicek", 
+#                        assetPrices, 
+#                        vasicekRates, 
+#                        bs_rnd_trader,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
+#
+#exper.append(DAExperiment("results/da_experiments/vol_rnd_vasicekJump", 
+#                        assetPrices, 
+#                        vasicekJumpRates, 
+#                        bs_rnd_trader,
+#                        [call_atm, call_otm, call_itm], 
+#                        numTraders, 
+#                        linAssetPrices,
+#                        linTime))
 
 #exper.append(DAExperiment("results/da_experiments/mon_lin_brwn", 
 #                        assetPrices, 

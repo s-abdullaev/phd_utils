@@ -23,6 +23,13 @@ class RandomQuantity(object):
         optionPrices['quantities']=optionPrices['isLong']*np.random.randint(0, self.qntyRange[1], size)
         return optionPrices
 
+class RandomSingularQuantity(object):
+    
+    def getQuantities(self, optionPrices, opt):
+        optionPrices['quantities']=optionPrices['isLong']
+        return optionPrices
+
+
 class LinearQuantity(object):
     def __init__(self, equib_quant):
         self.equib_quant=equib_quant
